@@ -41,7 +41,7 @@ Documentation = "https://github.com/nic01asFr/mcp-server-grist/blob/main/README.
 Source = "https://github.com/nic01asFr/mcp-server-grist"
 
 [project.scripts]
-mcp-server-grist = "mcp_server_grist:main"
+mcp-server-grist = "mcp_server_grist.main:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "mcp_server_grist.version.__version__"}
