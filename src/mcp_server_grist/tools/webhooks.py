@@ -30,16 +30,21 @@ def register_webhook_tools(mcp_server):
 
 async def list_webhooks(doc_id: str, ctx=None) -> Dict[str, Any]:
     """
-    Liste les webhooks d'un document Grist.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Lists the webhooks of a Grist document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document
-        
+
+        doc_id: The ID of the document
+
+
+
     Returns:
-        Dict avec statut, message et liste des webhooks
+
+    Dict with status, message, and list of webhooks
     """
     logger.info(f"Tool called: list_webhooks with doc_id: {doc_id}")
     
@@ -77,22 +82,33 @@ async def create_webhook(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Crée un webhook pour un document Grist.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-        - list_tables: Pour obtenir un table_id valide (si spécifié)
-    
+    Creates a webhook for a Grist document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+        - list_tables: To obtain a valid table_id (if specified)
+
     Args:
-        doc_id: L'ID du document
-        url: URL du webhook (où les notifications seront envoyées)
-        table_id: ID de la table à surveiller (optionnel, tous si non spécifié)
-        event_types: Types d'événements à surveiller (optionnel, tous si non spécifié)
-                    Valeurs possibles: ["add", "update", "delete"]
-        memo: Note descriptive pour le webhook (optionnel)
-        
+
+        doc_id: The ID of the document
+
+        URL: URL of the webhook (where notifications will be sent)
+
+        table_id: ID of the table to monitor (optional, all if not specified)
+
+        event_types: Types of events to monitor (optional, all if not specified)
+
+        Possible values: ["add", "update", "delete"]
+
+        Memo: Descriptive note for the webhook (optional)
+
+
+
     Returns:
-        Dict avec statut, message et ID du webhook créé
+
+    Dict with status, message, and ID of the created webhook
     """
     logger.info(f"Tool called: create_webhook with doc_id: {doc_id}, url: {url}")
     
@@ -163,22 +179,33 @@ async def modify_webhook(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie un webhook existant.
-    
-    Prérequis:
-        - list_webhooks: Pour obtenir un webhook_id valide
-    
+    Modifies an existing webhook.
+
+    Prerequisites:
+
+        - list_webhooks: To obtain a valid webhook_id
+
     Args:
-        doc_id: L'ID du document
-        webhook_id: L'ID du webhook à modifier
-        url: Nouvelle URL du webhook (optionnel)
-        table_id: Nouvel ID de table à surveiller (optionnel)
-        event_types: Nouveaux types d'événements à surveiller (optionnel)
-        memo: Nouvelle note descriptive (optionnel)
-        active: État d'activation du webhook (optionnel)
-        
+
+        doc_id: The ID of the document
+
+        webhook_id: The ID of the webhook to modify
+
+        URL: New webhook URL (optional)
+
+        table_id: New table ID to monitor (optional)
+
+        event_types: New types of events to monitor (optional)
+
+        Memo: New descriptive note (optional)
+
+        active: Webhook activation status (optional)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_webhook with doc_id: {doc_id}, webhook_id: {webhook_id}")
     
@@ -245,17 +272,23 @@ async def delete_webhook(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime un webhook.
-    
-    Prérequis:
-        - list_webhooks: Pour obtenir un webhook_id valide
-    
+    Deletes a webhook.
+
+    Prerequisites:
+
+        - list_webhooks: To obtain a valid webhook_id
+
     Args:
-        doc_id: L'ID du document
-        webhook_id: L'ID du webhook à supprimer
-        
+
+        doc_id: The ID of the document
+
+        webhook_id: The ID of the webhook to delete
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: delete_webhook with doc_id: {doc_id}, webhook_id: {webhook_id}")
     
@@ -286,15 +319,19 @@ async def clear_webhook_queue(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Vide la file d'attente des webhooks pour un document.
-    
-    Utile en cas d'accumulation de notifications non envoyées.
-    
+    Clears the webhook queue for a document.
+
+    Useful in case of an accumulation of unsent notifications.
+
     Args:
-        doc_id: L'ID du document
-        
+
+        doc_id: The ID of the document
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: clear_webhook_queue with doc_id: {doc_id}")
     
