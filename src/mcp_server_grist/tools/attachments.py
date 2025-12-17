@@ -166,7 +166,7 @@ async def download_attachment(
                 "message": "Client Grist non configuré"
             }
         
-        # Récupérer d'abord les métadonnées pour avoir le nom et le type
+        # Récupérer d'abord les métadonnées pour avoir le name et le type
         metadata = await client.get_attachment_metadata(doc_id, attachment_id)
         
         # Télécharger le contenu
