@@ -2,7 +2,7 @@
 Outils de gestion des webhooks pour l'API Grist.
 
 Ce module contient des outils MCP pour gérer les webhooks
-dans les documents Grist: liste, création, modification, suppression.
+dans les documents Grist: liste, création, modification, deletion.
 """
 
 import logging
@@ -310,7 +310,7 @@ async def delete_webhook(
         logger.error(f"Error deleting webhook: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression du webhook: {str(e)}"
+            "message": f"Erreur lors de la deletion du webhook: {str(e)}"
         }
 
 
