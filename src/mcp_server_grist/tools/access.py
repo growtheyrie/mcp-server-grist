@@ -41,16 +41,21 @@ async def list_organization_access(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Liste les utilisateurs ayant accès à une organisation.
-    
-    Prérequis:
-        - list_organizations: Pour obtenir un org_id valide
-    
+    Lists users who have access to an organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
     Args:
-        org_id: L'ID de l'organisation
-        
+
+        org_id: The ID of the organization
+
+
+
     Returns:
-        Dict avec statut, message et détails des accès
+
+    Dict with status, message and access details
     """
     logger.info(f"Tool called: list_organization_access with org_id: {org_id}")
     
@@ -84,19 +89,27 @@ async def modify_organization_access(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie l'accès d'un utilisateur à une organisation.
-    
-    Prérequis:
-        - list_organizations: Pour obtenir un org_id valide
-        - list_organization_access: Pour voir les accès actuels
-    
+    Modifies a user's access to an organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
+        - list_organization_access: To see current access
+
     Args:
-        org_id: L'ID de l'organisation
-        user_email: Email de l'utilisateur
-        access_level: Niveau d'accès (owners, editors, viewers, members, ou null pour supprimer)
-        
+
+        org_id: The ID of the organization
+
+        user_email: User's email
+
+        access_level: Access level (owners, editors, viewers, members, or null to remove)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_organization_access with org_id: {org_id}, user_email: {user_email}")
     
@@ -142,16 +155,21 @@ async def list_workspace_access(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Liste les utilisateurs ayant accès à un espace de travail.
-    
-    Prérequis:
-        - list_workspaces: Pour obtenir un workspace_id valide
-    
+    Lists users who have access to a workspace.
+
+    Prerequisites:
+
+        - list_workspaces: To obtain a valid workspace_id
+
     Args:
-        workspace_id: L'ID de l'espace de travail
-        
+
+        workspace_id: The ID of the workspace
+
+
+
     Returns:
-        Dict avec statut, message et détails des accès
+
+    Dict with status, message and access details
     """
     logger.info(f"Tool called: list_workspace_access with workspace_id: {workspace_id}")
     
@@ -185,19 +203,27 @@ async def modify_workspace_access(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie l'accès d'un utilisateur à un espace de travail.
-    
-    Prérequis:
-        - list_workspaces: Pour obtenir un workspace_id valide
-        - list_workspace_access: Pour voir les accès actuels
-    
+    Modifies a user's access to a workspace.
+
+    Prerequisites:
+
+        - list_workspaces: To obtain a valid workspace_id
+
+        - list_workspace_access: To see current access
+
     Args:
-        workspace_id: L'ID de l'espace de travail
-        user_email: Email de l'utilisateur
-        access_level: Niveau d'accès (owners, editors, viewers, ou null pour supprimer)
-        
+
+        workspace_id: The ID of the workspace
+
+        user_email: User's email
+
+        access_level: Access level (owners, editors, viewers, or null to remove)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_workspace_access with workspace_id: {workspace_id}, user_email: {user_email}")
     
@@ -243,16 +269,21 @@ async def list_document_access(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Liste les utilisateurs ayant accès à un document.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Lists the users who have access to a document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document
-        
+
+        doc_id: The ID of the document
+
+
+
     Returns:
-        Dict avec statut, message et détails des accès
+
+    Dict with status, message and access details
     """
     logger.info(f"Tool called: list_document_access with doc_id: {doc_id}")
     
@@ -286,19 +317,27 @@ async def modify_document_access(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie l'accès d'un utilisateur à un document.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-        - list_document_access: Pour voir les accès actuels
-    
+    Modifies a user's access to a document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+        - list_document_access: To see current access
+
     Args:
-        doc_id: L'ID du document
-        user_email: Email de l'utilisateur
-        access_level: Niveau d'accès (owners, editors, viewers, ou null pour supprimer)
-        
+
+        doc_id: The ID of the document
+
+        user_email: User's email
+
+        access_level: Access level (owners, editors, viewers, or null to remove)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_document_access with doc_id: {doc_id}, user_email: {user_email}")
     
