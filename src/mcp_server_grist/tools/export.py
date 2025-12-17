@@ -34,18 +34,25 @@ async def download_document_sqlite(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Télécharge un document Grist au format SQLite.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Downloads a Grist document in SQLite format.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document
-        nohistory: Si True, exclut l'historique des modifications
-        template: Si True, télécharge comme modèle (sans données utilisateur)
-        
+
+        doc_id: The ID of the document
+
+        nohistory: If True, excludes change history
+
+        template: If True, download as a template (without user data)
+
+
+
     Returns:
-        Dict avec statut, message et contenu encodé en base64
+
+    Dict with status, message and content encoded in base64
     """
     logger.info(f"Tool called: download_document_sqlite with doc_id: {doc_id}")
     
@@ -84,17 +91,23 @@ async def download_document_excel(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Télécharge un document Grist au format Excel.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Downloads a Grist document in Excel format.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document
-        header: Format des en-têtes (label, id, ou none)
-        
+
+        doc_id: The ID of the document
+
+        header: Header format (label, id, or none)
+
+
+
     Returns:
-        Dict avec statut, message et contenu encodé en base64
+
+    Dict with status, message and content encoded in base64
     """
     logger.info(f"Tool called: download_document_excel with doc_id: {doc_id}")
     
@@ -140,19 +153,27 @@ async def download_table_csv(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Télécharge une table Grist au format CSV.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-        - list_tables: Pour obtenir un table_id valide
-    
+    Downloads a Grist table in CSV format.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+        - list_tables: To obtain a valid table_id
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        header: Format des en-têtes (label, id, ou none)
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        header: Header format (label, id, or none)
+
+
+
     Returns:
-        Dict avec statut, message et contenu CSV
+
+    Dict with status, message and CSV content
     """
     logger.info(f"Tool called: download_table_csv with doc_id: {doc_id}, table_id: {table_id}")
     
