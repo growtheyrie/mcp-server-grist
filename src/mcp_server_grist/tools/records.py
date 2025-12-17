@@ -35,22 +35,35 @@ async def add_grist_records(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Ajoute des enregistrements à une table Grist.
-    
+    Adds records to a Grist table.
+
     Args:
-        doc_id: L'ID du document Grist
-        table_id: L'ID de la table
-        records: Liste des enregistrements à ajouter. Chaque enregistrement est un dictionnaire
-                où les clés sont les noms des colonnes et les valeurs sont les données.
-                Exemple: [{"nom": "Dupont", "prénom": "Jean", "âge": 35}]
-                
+
+        doc_id: The ID of the Grist document
+
+        table_id: The table ID
+
+        records: List of records to add. Each record is a dictionary
+
+    where the keys are the column names and the values ​​are the data.
+
+        Example: [{"name": "Dupont", "first name": "Jean", "age": 35}]
+
+
+
     Returns:
-        Dict avec statut, message et IDs des enregistrements créés:
-        {
-            "success": True/False,
-            "message": "Message de succès ou d'erreur",
-            "record_ids": [1, 2, 3]  # IDs des enregistrements créés
-        }
+
+    Dict with status, message and IDs of created records:
+
+    {
+
+    "success": True/False,
+
+    "message": "Success or error message",
+
+    "record_ids": [1, 2, 3] # IDs of the created records
+
+    }
     """
     logger.info(f"Tool called: add_grist_records for doc_id: {doc_id}, table_id: {table_id}")
     
@@ -86,27 +99,39 @@ async def add_grist_records_safe(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Ajoute des enregistrements avec validation préalable de la structure.
-    
-    Cette version sécurisée valide l'existence de la table et des colonnes
-    avant d'ajouter les enregistrements, et suggère des corrections si nécessaire.
-    
-    Prérequis:
-        - list_tables, list_columns: effectués automatiquement en interne
-    
-    Flux de travail typique:
-        1. get_table_schema(doc_id, table_id) → comprendre les types
-        2. add_grist_records_safe(doc_id, table_id, records) → insertion validée
-        3. list_records(doc_id, table_id, limit=5) → vérifier le résultat
-    
+    Adds records with prior validation of the structure.
+
+    This secure version validates the existence of the table and columns
+
+    before adding the records, and suggests corrections if necessary.
+
+    Prerequisites:
+
+        - list_tables, list_columns: performed automatically internally
+
+    Typical workflow:
+
+        1. get_table_schema(doc_id, table_id) → understand the types
+
+        2. add_grist_records_safe(doc_id, table_id, records) → validated insertion
+
+        3. list_records(doc_id, table_id, limit=5) → check the result
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        records: Liste des enregistrements à ajouter
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        Records: List of records to add
+
+
+
     Returns:
-        Dict avec statut, message, éventuellement des suggestions de correction,
-        et IDs des enregistrements créés si l'opération a réussi
+
+    Dict with status, message, and possibly correction suggestions.
+
+    and IDs of the records created if the operation was successful
     """
     logger.info(f"Tool called: add_grist_records_safe for doc_id: {doc_id}, table_id: {table_id}")
     
@@ -173,24 +198,35 @@ async def update_grist_records(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Met à jour des enregistrements existants dans une table Grist.
-    
-    Prérequis:
-        - list_records: Pour obtenir les IDs des enregistrements à mettre à jour
-    
-    Flux de travail typique:
+    Updates existing records in a Grist table.
+
+    Prerequisites:
+
+        - list_records: To obtain the IDs of the records to update
+
+    Typical workflow:
+
         1. list_records(doc_id, table_id) → obtenir les IDs
+
         2. update_grist_records(doc_id, table_id, records_with_id) → mise à jour
-    
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        records: Liste des enregistrements à mettre à jour. 
-                Chaque enregistrement doit contenir un champ 'id'
-                Exemple: [{"id": 1, "nom": "Dupont", "prénom": "Jean"}]
-                
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        records: List of records to be updated.
+
+    Each record must contain an 'id' field
+
+        Example: [{"id": 1, "nom": "Dupont", "prénom": "Jean"}]
+
+
+
     Returns:
-        Dict avec statut, message et IDs des enregistrements mis à jour
+
+    Dict with updated status, message, and record IDs
     """
     logger.info(f"Tool called: update_grist_records for doc_id: {doc_id}, table_id: {table_id}")
     
@@ -235,22 +271,31 @@ async def delete_grist_records(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime des enregistrements d'une table Grist.
-    
-    Prérequis:
-        - list_records: Pour obtenir les IDs des enregistrements à supprimer
-    
-    Flux de travail typique:
+    Deletes records from a Grist table.
+
+    Prerequisites:
+
+        - list_records: To get the IDs of the records to delete
+
+    Typical workflow:
+
         1. list_records(doc_id, table_id) → obtenir les IDs
+
         2. delete_grist_records(doc_id, table_id, record_ids) → suppression
-    
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        record_ids: Liste des IDs des enregistrements à supprimer
-                
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        record_ids: List of IDs of records to delete
+
+
+
     Returns:
-        Dict avec statut et message de confirmation
+
+    Dict with status and confirmation message
     """
     logger.info(f"Tool called: delete_grist_records for doc_id: {doc_id}, table_id: {table_id}")
     
