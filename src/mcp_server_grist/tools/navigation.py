@@ -36,20 +36,27 @@ def register_navigation_tools(mcp_server):
 
 async def list_organizations(ctx) -> Dict[str, Any]:
     """
-    Liste toutes les organisations Grist accessibles.
-    
-    Prérequis:
-        Aucun - ce tool est le point d'entrée principal pour la navigation.
-    
-    Flux de travail typique:
-        1. list_organizations() → obtenir tous les org_id disponibles
-        2. list_workspaces(org_id) → explorer les espaces de travail
-    
+    Lists all accessible Grist organizations.
+
+    Prerequisites:
+
+    None - this tool is the main entry point for navigation.
+
+    Typical workflow:
+
+        1. list_organizations() → get all available org_ids
+
+        2. list_workspaces(org_id) → explore workspaces
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - organizations (List): Liste des organisations disponibles
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - organizations (List): List of available organizations
     """
     logger.info("Tool called: list_organizations")
     
@@ -80,23 +87,33 @@ async def list_organizations(ctx) -> Dict[str, Any]:
 
 async def describe_organization(org_id: Union[int, str], ctx) -> Dict[str, Any]:
     """
-    Obtient des informations détaillées sur une organisation spécifique.
-    
-    Prérequis:
-        - list_organizations: Pour obtenir un org_id valide
-    
-    Flux de travail typique:
-        1. list_organizations() → identifier l'organisation
-        2. describe_organization(org_id) → obtenir les détails
-    
+    Gets detailed information about a specific organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
+    Typical workflow:
+
+        1. list_organizations() → identify the organization
+
+        2. describe_organization(org_id) → get details
+
     Args:
-        org_id: L'ID de l'organisation à décrire
-        
+
+        org_id: The ID of the organization to be described
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - organization (Dict): Détails de l'organisation
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - organization (Dict): Organization details
     """
     logger.info(f"Tool called: describe_organization with org_id: {org_id}")
     
@@ -125,29 +142,45 @@ async def describe_organization(org_id: Union[int, str], ctx) -> Dict[str, Any]:
 
 async def list_workspaces(org_id: Union[int, str], ctx) -> Dict[str, Any]:
     """
-    Liste tous les espaces de travail dans une organisation Grist.
-    
-    Prérequis:
-        - list_organizations: Pour obtenir un org_id valide
-        
-    Flux de travail typique:
+    Lists all workspaces in a Grist organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
+
+
+    Typical workflow:
+
         1. list_organizations() → choisir org_id
+
         2. list_workspaces(org_id) → obtenir workspace_id
-        3. list_documents(workspace_id) → naviguer dans les documents
-    
-    Voir aussi:
-        - create_workspace: Pour créer un nouvel espace de travail
-        - describe_workspace: Pour obtenir les détails d'un workspace
-        - modify_workspace_access: Pour gérer les permissions
-    
+
+        3. list_documents(workspace_id) → navigate through documents
+
+    See also:
+
+        - create_workspace: To create a new workspace
+
+        - describe_workspace: To get the details of a workspace
+
+        - modify_workspace_access: To manage permissions
+
     Args:
-        org_id: L'ID de l'organisation (entier ou sous-domaine string)
-        
+
+        org_id: The organization ID (integer or subdomain string)
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - workspaces (List): Liste des espaces de travail
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - workspaces (List): List of workspaces
     """
     logger.info(f"Tool called: list_workspaces with org_id: {org_id}")
     
@@ -178,24 +211,35 @@ async def list_workspaces(org_id: Union[int, str], ctx) -> Dict[str, Any]:
 
 async def describe_workspace(workspace_id: int, ctx) -> Dict[str, Any]:
     """
-    Obtient des informations détaillées sur un espace de travail spécifique.
-    
-    Prérequis:
-        - list_workspaces: Pour obtenir un workspace_id valide
-    
-    Flux de travail typique:
-        1. list_organizations() → identifier l'organisation
-        2. list_workspaces(org_id) → identifier l'espace de travail
-        3. describe_workspace(workspace_id) → obtenir les détails
-    
+    Gets detailed information about a specific workspace.
+
+    Prerequisites:
+
+        - list_workspaces: To obtain a valid workspace_id
+
+    Typical workflow:
+
+        1. list_organizations() → identify the organization
+
+        2. list_workspaces(org_id) → identify the workspace
+
+        3. describe_workspace(workspace_id) → get details
+
     Args:
-        workspace_id: L'ID de l'espace de travail à décrire
-        
+
+        workspace_id: The ID of the workspace to describe
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - workspace (Dict): Détails de l'espace de travail
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - workspace (Dict): Workspace details
     """
     logger.info(f"Tool called: describe_workspace with workspace_id: {workspace_id}")
     
@@ -224,29 +268,45 @@ async def describe_workspace(workspace_id: int, ctx) -> Dict[str, Any]:
 
 async def list_documents(workspace_id: int, ctx) -> Dict[str, Any]:
     """
-    Liste tous les documents dans un espace de travail Grist.
-    
-    Prérequis:
-        - list_workspaces: Pour obtenir un workspace_id valide
-        
-    Flux de travail typique:
+    Lists all documents in a Grist workspace.
+
+    Prerequisites:
+
+        - list_workspaces: To obtain a valid workspace_id
+
+
+
+    Typical workflow:
+
         1. list_workspaces(org_id) → obtenir workspace_id
+
         2. list_documents(workspace_id) → obtenir doc_id
-        3. list_tables(doc_id) → explorer les tables du document
-    
-    Voir aussi:
-        - create_document: Pour créer un nouveau document
-        - describe_document: Pour obtenir les détails d'un document
-        - modify_document_access: Pour gérer les permissions
-    
+
+        3. list_tables(doc_id) → explore the document tables
+
+    See also:
+
+        - create_document: To create a new document
+
+        - describe_document: To get the details of a document
+
+        - modify_document_access: To manage permissions
+
     Args:
-        workspace_id: L'ID de l'espace de travail
-        
+
+        workspace_id: The ID of the workspace
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - documents (List): Liste des documents
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - documents (List): List of documents
     """
     logger.info(f"Tool called: list_documents with workspace_id: {workspace_id}")
     
@@ -277,23 +337,35 @@ async def list_documents(workspace_id: int, ctx) -> Dict[str, Any]:
 
 async def describe_document(doc_id: str, ctx) -> Dict[str, Any]:
     """
-    Obtient des informations détaillées sur un document spécifique.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
-    Flux de travail typique:
-        1. list_documents(workspace_id) → identifier le document
-        2. describe_document(doc_id) → obtenir les détails complets
-    
+    Gets detailed information about a specific document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+    Typical workflow:
+
+        1. list_workspaces(org_id) → identify the workspace
+
+        2. list_documents(workspace_id) → identify the document
+
+        3. describe_document(doc_id) → get details
+
     Args:
-        doc_id: L'ID du document à décrire
-        
+
+        doc_id: The ID of the document to be described
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - document (Dict): Détails du document
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - document (Dict): Document details
     """
     logger.info(f"Tool called: describe_document with doc_id: {doc_id}")
     
@@ -322,28 +394,43 @@ async def describe_document(doc_id: str, ctx) -> Dict[str, Any]:
 
 async def list_tables(doc_id: str, ctx) -> Dict[str, Any]:
     """
-    Liste toutes les tables dans un document Grist.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-        
-    Flux de travail typique:
+    Lists all tables in a Grist document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+
+
+    Typical workflow:
+
         1. list_documents(workspace_id) → obtenir doc_id
-        2. list_tables(doc_id) → obtenir table_id
-        3. list_columns(doc_id, table_id) → explorer la structure
-    
-    Voir aussi:
-        - create_table: Pour créer une nouvelle table
-        - filter_sql_query: Pour requêter les données d'une table
-    
+
+        2. list_tables(doc_id) → get table_id
+
+        3. list_columns(doc_id, table_id) → explore the structure
+
+    See also:
+
+        - create_table: To create a new table
+
+        - filter_sql_query: To query the data in a table
+
     Args:
-        doc_id: L'ID du document
-        
+
+        doc_id: The ID of the document
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - tables (List): Liste des tables
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - tables (List): List of tables
     """
     logger.info(f"Tool called: list_tables with doc_id: {doc_id}")
     
@@ -374,29 +461,45 @@ async def list_tables(doc_id: str, ctx) -> Dict[str, Any]:
 
 async def list_columns(doc_id: str, table_id: str, ctx) -> Dict[str, Any]:
     """
-    Liste toutes les colonnes dans une table Grist.
-    
-    Prérequis:
-        - list_tables: Pour obtenir un table_id valide
-        
-    Flux de travail typique:
-        1. list_tables(doc_id) → obtenir table_id
-        2. list_columns(doc_id, table_id) → explorer la structure
-        3. list_records(doc_id, table_id) → obtenir les données
-    
-    Voir aussi:
-        - create_column: Pour ajouter une nouvelle colonne
-        - modify_column: Pour modifier une colonne existante
-    
+    Lists all columns in a Grist table.
+
+    Prerequisites:
+
+        - list_tables: To obtain a valid table_id
+
+
+
+    Typical workflow:
+
+        1. list_tables(doc_id) → get table_id
+
+        2. list_columns(doc_id, table_id) → explore the structure
+
+        3. list_records(doc_id, table_id) → get the data
+
+    See also:
+
+        - create_column: To add a new column
+
+        - modify_column: To modify an existing column
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - columns (List): Liste des colonnes
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - columns (List): List of columns
     """
     logger.info(f"Tool called: list_columns with doc_id: {doc_id}, table_id: {table_id}")
     
@@ -433,32 +536,51 @@ async def list_records(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Liste les enregistrements dans une table Grist avec tri et limitation optionnels.
-    
-    Prérequis:
-        - list_tables: Pour obtenir un table_id valide
-        
-    Flux de travail typique:
-        1. list_tables(doc_id) → obtenir table_id
-        2. list_columns(doc_id, table_id) → comprendre la structure
-        3. list_records(doc_id, table_id, sort="nom", limit=10) → obtenir les données
-    
-    Voir aussi:
-        - filter_sql_query: Alternative avec filtrage avancé
-        - add_grist_records: Pour ajouter des enregistrements
-    
+    Lists records in a Grist table with optional sorting and limiting.
+
+    Prerequisites:
+
+        - list_tables: To obtain a valid table_id
+
+
+
+    Typical workflow:
+
+        1. list_tables(doc_id) → get table_id
+
+        2. list_columns(doc_id, table_id) → understand the structure
+
+        3. list_records(doc_id, table_id, sort="name", limit=10) → retrieve the data
+
+    See also:
+
+        - filter_sql_query: Alternative with advanced filtering
+
+        - add_grist_records: To add records
+
     Args:
-        doc_id: L'ID du document Grist
-        table_id: L'ID de la table
-        sort: Colonne de tri (optionnel, format: "colonne" ou "colonne:asc/desc")
-        limit: Nombre maximum d'enregistrements à retourner (optionnel)
-        
+
+        doc_id: The ID of the Grist document
+
+        table_id: The table ID
+
+        sort: Sort column (optional, format: "column" or "column:asc/desc")
+
+        limit: Maximum number of records to return (optional)
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - records (List): Liste des enregistrements
-            - record_count (int): Nombre total d'enregistrements retournés
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - records (List): List of records
+
+        - record_count (int): Total number of records returned
     """
     logger.info(f"Tool called: list_records with doc_id: {doc_id}, table_id: {table_id}")
     
@@ -495,27 +617,41 @@ async def list_records(
 
 async def get_table_schema(doc_id: str, table_id: str, ctx) -> Dict[str, Any]:
     """
-    Obtient le schéma détaillé d'une table Grist.
-    
-    Prérequis:
-        - list_tables: Pour obtenir un table_id valide
-        
-    Flux de travail typique:
-        1. list_tables(doc_id) → obtenir table_id
-        2. get_table_schema(doc_id, table_id) → obtenir la structure détaillée
-    
-    Voir aussi:
-        - list_columns: Pour une liste plus simple des colonnes
-    
+    Gets the detailed schema of a Grist table.
+
+    Prerequisites:
+
+        - list_tables: To obtain a valid table_id
+
+
+
+    Typical workflow:
+
+        1. list_tables(doc_id) → get table_id
+
+        2. get_table_schema(doc_id, table_id) → get the detailed structure
+
+    See also:
+
+        - list_columns: For a simpler list of columns
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+
+
     Returns:
-        Dict avec:
-            - success (bool): Indique si l'opération a réussi
-            - message (str): Message de succès ou d'erreur
-            - schema (Dict): Schéma détaillé de la table au format frictionless
+
+    Dict with:
+
+        - success (bool): Indicates whether the operation was successful
+
+        - message (str): Success or error message
+
+        - schema (Dict): Detailed diagram of the table in frictionless format
     """
     logger.info(f"Tool called: get_table_schema with doc_id: {doc_id}, table_id: {table_id}")
     
