@@ -2,7 +2,7 @@
 Outils de gestion des enregistrements pour l'API Grist.
 
 Ce module contient des outils MCP pour manipuler les enregistrements
-dans les tables Grist: ajout, mise à jour et suppression.
+dans les tables Grist: ajout, update et deletion.
 """
 
 import logging
@@ -129,7 +129,7 @@ async def add_grist_records_safe(
 
     Returns:
 
-    Dict with status, message, and possibly correction suggestions.
+    Dict with status, message, and possibly correction suggestions
 
     and IDs of the records created if the operation was successful
     """
@@ -155,9 +155,9 @@ async def add_grist_records_safe(
                 "record_ids": []
             }
         
-        # Validation 2: Vérifier les noms de colonnes si des enregistrements sont fournis
+        # Validation 2: Vérifier les names de colonnes si des enregistrements sont fournis
         if records and isinstance(records, list) and len(records) > 0:
-            # Extraire tous les noms de colonnes utilisés
+            # Extraire tous les names de colonnes utilisés
             column_names = set()
             for record in records:
                 column_names.update(record.keys())
@@ -206,9 +206,9 @@ async def update_grist_records(
 
     Typical workflow:
 
-        1. list_records(doc_id, table_id) → obtenir les IDs
+        1. list_records(doc_id, table_id) → get the IDs
 
-        2. update_grist_records(doc_id, table_id, records_with_id) → mise à jour
+        2. update_grist_records(doc_id, table_id, records_with_id) → update
 
     Args:
 
@@ -220,7 +220,7 @@ async def update_grist_records(
 
     Each record must contain an 'id' field
 
-        Example: [{"id": 1, "nom": "Dupont", "prénom": "Jean"}]
+        Example: [{"id": 1, "name": "Smith", "first_name": "John"}]
 
 
 
@@ -259,7 +259,7 @@ async def update_grist_records(
         logger.error(f"Error in update_grist_records: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de la mise à jour des enregistrements: {str(e)}",
+            "message": f"Erreur lors de la update des enregistrements: {str(e)}",
             "record_ids": []
         }
 
@@ -279,9 +279,9 @@ async def delete_grist_records(
 
     Typical workflow:
 
-        1. list_records(doc_id, table_id) → obtenir les IDs
+        1. list_records(doc_id, table_id) → get the IDs
 
-        2. delete_grist_records(doc_id, table_id, record_ids) → suppression
+        2. delete_grist_records(doc_id, table_id, record_ids) → deletion
 
     Args:
 
@@ -325,5 +325,5 @@ async def delete_grist_records(
         logger.error(f"Error in delete_grist_records: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression des enregistrements: {str(e)}"
+            "message": f"Erreur lors de la deletion des enregistrements: {str(e)}"
         }
