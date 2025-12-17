@@ -19,17 +19,17 @@ RUN pip install --no-cache-dir -U pip && \
 COPY . .
 
 # Exposer les ports pour les modes HTTP
-EXPOSE 8000
+EXPOSE 3000
 
 # Définir les variables d'environnement pour la configuration de Grist
 ENV GRIST_API_KEY=""
 ENV GRIST_API_HOST="https://grist.numerique.gouv.fr/api"
 
 # Point d'entrée avec support des différents modes de transport
-ENTRYPOINT ["python", "-m", "grist_mcp_server"]
+ENTRYPOINT ["python", "-m", "mcp_server_grist"]
 
-# Par défaut, utiliser le mode stdio
-CMD ["--transport", "stdio"]
+# Utilisez par défaut streamable-http pour le déploiement dans le cloud
+CMD ["--transport", "streamable-http", "--host", "0.0.0.0", "--port", "3000", "--path", "/mcp"]
 
 # Exemples d'utilisation du conteneur:
 # Mode stdio (par défaut):
