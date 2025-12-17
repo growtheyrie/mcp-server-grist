@@ -151,7 +151,7 @@ async def delete_organization(
         logger.error(f"Error deleting organization: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression de l'organisation: {str(e)}"
+            "message": f"Erreur lors de la deletion de l'organisation: {str(e)}"
         }
 
 
@@ -316,7 +316,7 @@ async def delete_workspace(
         logger.error(f"Error deleting workspace: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression de l'espace de travail: {str(e)}"
+            "message": f"Erreur lors de la deletion de l'espace de travail: {str(e)}"
         }
 
 
@@ -336,7 +336,7 @@ async def create_document(
 
     Typical workflow:
 
-        1. list_workspaces(org_id) → obtenir workspace_id
+        1. list_workspaces(org_id) → get workspace_id
 
         2. create_document(workspace_id, "Name") → create the document
 
@@ -484,7 +484,7 @@ async def delete_document(
         logger.error(f"Error deleting document: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression du document: {str(e)}"
+            "message": f"Erreur lors de la deletion du document: {str(e)}"
         }
 
 
@@ -627,7 +627,7 @@ async def delete_document_history(
         logger.error(f"Error deleting document history: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression de l'historique du document: {str(e)}"
+            "message": f"Erreur lors de la deletion de l'historique du document: {str(e)}"
         }
 
 
@@ -648,7 +648,7 @@ async def create_table(
 
     Typical workflow:
 
-        1. list_documents(workspace_id) → obtenir doc_id
+        1. list_documents(workspace_id) → get doc_id
 
         2. create_table(doc_id, "TableName") → create the table
 
@@ -754,7 +754,7 @@ async def modify_table(
         
         message = f"Table {table_id} modifiée avec succès"
         if new_table_id:
-            message += f" (renommée en '{new_table_id}')"
+            message += f" (renamemée en '{new_table_id}')"
         
         return {
             "success": True,
@@ -940,7 +940,7 @@ async def modify_column(
         
         message = f"Colonne '{column_id}' modifiée avec succès"
         if new_column_id:
-            message += f" (renommée en '{new_column_id}')"
+            message += f" (renamemée en '{new_column_id}')"
         
         return {
             "success": True,
@@ -1003,5 +1003,5 @@ async def delete_column(
         logger.error(f"Error deleting column: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors de la suppression de la colonne: {str(e)}"
+            "message": f"Erreur lors de la deletion de la colonne: {str(e)}"
         }
