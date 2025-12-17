@@ -56,17 +56,23 @@ async def modify_organization(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie les propriétés d'une organisation.
-    
-    Prérequis:
-        - list_organizations: Pour obtenir un org_id valide
-    
+    Modifies the properties of an organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
     Args:
-        org_id: L'ID de l'organisation à modifier
-        name: Nouveau nom pour l'organisation (optionnel)
-        
+
+        org_id: The ID of the organization to modify
+
+        name: New name for the organization (optional)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_organization with org_id: {org_id}")
     
@@ -107,17 +113,23 @@ async def delete_organization(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime une organisation.
-    
+    Deletes an organization.
+
     Attention:
-        Cette action est irréversible et supprimera tous les espaces de travail,
-        documents et données associés à cette organisation.
-    
+
+    This action is irreversible and will delete all workspaces.
+
+    documents and data associated with this organization.
+
     Args:
-        org_id: L'ID de l'organisation à supprimer
-        
+
+        org_id: The ID of the organization to delete
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: delete_organization with org_id: {org_id}")
     
@@ -151,22 +163,31 @@ async def create_workspace(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Crée un nouvel espace de travail dans une organisation.
-    
-    Prérequis:
-        - list_organizations: Pour obtenir un org_id valide
-    
-    Flux de travail typique:
+    Creates a new workspace within an organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
+    Typical workflow:
+
         1. list_organizations() → obtenir org_id
-        2. create_workspace(org_id, "Nom") → créer l'espace de travail
-        3. list_workspaces(org_id) → vérifier la création
-    
+
+        2. create_workspace(org_id, "Name") → create the workspace
+
+        3. list_workspaces(org_id) → verify creation
+
     Args:
-        org_id: L'ID de l'organisation
-        name: Nom du nouvel espace de travail
-        
+
+        org_id: The ID of the organization
+
+        name: Name of the new workspace
+
+
+
     Returns:
-        Dict avec statut, message et ID de l'espace de travail créé
+
+    Dict with status, message, and ID of the created workspace
     """
     logger.info(f"Tool called: create_workspace with org_id: {org_id}, name: {name}")
     
@@ -200,17 +221,23 @@ async def modify_workspace(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie les propriétés d'un espace de travail.
-    
-    Prérequis:
-        - list_workspaces: Pour obtenir un workspace_id valide
-    
+    Modifies the properties of a workspace.
+
+    Prerequisites:
+
+        - list_workspaces: To obtain a valid workspace_id
+
     Args:
-        workspace_id: L'ID de l'espace de travail à modifier
-        name: Nouveau nom pour l'espace de travail (optionnel)
-        
+
+        workspace_id: The ID of the workspace to modify
+
+        name: New name for the workspace (optional)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_workspace with workspace_id: {workspace_id}")
     
@@ -251,17 +278,23 @@ async def delete_workspace(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime un espace de travail.
-    
+    Deletes a workspace.
+
     Attention:
-        Cette action est irréversible et supprimera tous les documents
-        et données associés à cet espace de travail.
-    
+
+    This action is irreversible and will delete all documents
+
+    and data associated with this workspace.
+
     Args:
-        workspace_id: L'ID de l'espace de travail à supprimer
-        
+
+        workspace_id: The ID of the workspace to delete
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: delete_workspace with workspace_id: {workspace_id}")
     
@@ -295,22 +328,31 @@ async def create_document(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Crée un nouveau document dans un espace de travail.
-    
-    Prérequis:
-        - list_workspaces: Pour obtenir un workspace_id valide
-    
-    Flux de travail typique:
+    Creates a new document in a workspace.
+
+    Prerequisites:
+
+        - list_workspaces: To obtain a valid workspace_id
+
+    Typical workflow:
+
         1. list_workspaces(org_id) → obtenir workspace_id
-        2. create_document(workspace_id, "Nom") → créer le document
-        3. list_documents(workspace_id) → vérifier la création
-    
+
+        2. create_document(workspace_id, "Name") → create the document
+
+        3. list_documents(workspace_id) → verify creation
+
     Args:
-        workspace_id: L'ID de l'espace de travail
-        name: Nom du nouveau document
-        
+
+        workspace_id: The ID of the workspace
+
+        name: Name of the new document
+
+
+
     Returns:
-        Dict avec statut, message et ID du document créé
+
+    Dict with status, message, and ID of the created document.
     """
     logger.info(f"Tool called: create_document with workspace_id: {workspace_id}, name: {name}")
     
@@ -345,18 +387,23 @@ async def modify_document(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie les propriétés d'un document.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Modifies the properties of a document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document à modifier
-        name: Nouveau nom pour le document (optionnel)
-        is_pinned: État d'épinglage du document (optionnel)
-        
+
+        doc_id: The ID of the document to be modified
+
+        name: New name for the document (optional)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_document with doc_id: {doc_id}")
     
@@ -399,17 +446,23 @@ async def delete_document(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime un document.
-    
+    Deletes a document.
+
     Attention:
-        Cette action est irréversible et supprimera toutes les données
-        associées à ce document.
-    
+
+    This action is irreversible and will delete all tables
+
+    and data associated with this document.
+
     Args:
-        doc_id: L'ID du document à supprimer
-        
+
+        doc_id: The ID of the document to delete
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: delete_document with doc_id: {doc_id}")
     
@@ -441,18 +494,25 @@ async def move_document(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Déplace un document vers un autre espace de travail.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-        - list_workspaces: Pour obtenir un workspace_id valide
-    
+    Moves a document to another workspace.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+        - list_workspaces: To obtain a valid destination workspace_id
+
     Args:
-        doc_id: L'ID du document à déplacer
-        target_workspace_id: L'ID de l'espace de travail de destination
-        
+
+        doc_id: The ID of the document to move
+
+        target_workspace_id: The ID of the destination workspace
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: move_document with doc_id: {doc_id}, target_workspace_id: {target_workspace_id}")
     
@@ -483,15 +543,21 @@ async def force_reload_document(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Force le rechargement d'un document.
-    
-    Utile en cas d'incohérences ou de problèmes de synchronisation.
-    
+    Forces the reloading of a document.
+
+    Useful when the document has been modified outside of the API.
+
+    Or when you want to reset the document state.
+
     Args:
-        doc_id: L'ID du document à recharger
-        
+
+        doc_id: The ID of the document to reload
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: force_reload_document with doc_id: {doc_id}")
     
@@ -523,16 +589,23 @@ async def delete_document_history(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime l'historique d'un document, ne conservant que les dernières actions.
-    
-    Utile pour réduire la taille des documents volumineux.
-    
+    Deletes the history of a document.
+
+    Attention:
+
+    This action is irreversible and will delete all versions
+
+    historical records of the document, retaining only the current state.
+
     Args:
-        doc_id: L'ID du document
-        keep: Nombre d'actions récentes à conserver (défaut: 1000)
-        
+
+        doc_id: The ID of the document whose history to delete
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: delete_document_history with doc_id: {doc_id}, keep: {keep}")
     
@@ -567,24 +640,33 @@ async def create_table(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Crée une nouvelle table dans un document.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
-    Flux de travail typique:
+    Creates a new table in a document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
+    Typical workflow:
+
         1. list_documents(workspace_id) → obtenir doc_id
-        2. create_table(doc_id, "TableName", columns=[...]) → créer la table
-        3. list_tables(doc_id) → vérifier la création
-    
+
+        2. create_table(doc_id, "TableName") → create the table
+
+        3. list_tables(doc_id) → verify creation
+
     Args:
-        doc_id: L'ID du document
-        table_id: ID de la nouvelle table (doit être unique dans le document)
-        columns: Liste des définitions de colonnes (optionnel)
-                Exemple: [{"id": "name", "type": "Text", "label": "Nom"}]
-        
+
+        doc_id: The ID of the document
+
+        table_id: ID of the new table (must be unique within the document)
+
+        columns: List of columns to create (optional)
+
+
+
     Returns:
-        Dict avec statut, message et détails de la table créée
+
+    Dict with status, message, and details of the created table
     """
     logger.info(f"Tool called: create_table with doc_id: {doc_id}, table_id: {table_id}")
     
@@ -627,18 +709,25 @@ async def modify_table(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie les propriétés d'une table.
-    
-    Prérequis:
-        - list_tables: Pour obtenir un table_id valide
-    
+    Modifies the properties of a table.
+
+    Prerequisites:
+
+        - list_tables: To obtain a valid table_id
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID actuel de la table
-        new_table_id: Nouvel ID pour la table (optionnel)
-        
+
+        doc_id: The ID of the document
+
+        table_id: The current ID of the table
+
+        new_table_id: New ID for the table (optional)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_table with doc_id: {doc_id}, table_id: {table_id}")
     
@@ -692,27 +781,41 @@ async def create_column(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Crée une nouvelle colonne dans une table.
-    
-    Prérequis:
-        - list_tables: Pour obtenir un table_id valide
-    
-    Flux de travail typique:
-        1. list_tables(doc_id) → obtenir table_id
-        2. create_column(doc_id, table_id, "col_name", "Text", "Nom") → créer la colonne
-        3. list_columns(doc_id, table_id) → vérifier la création
-    
+    Creates a new column in a table.
+
+    Prerequisites:
+
+        - list_tables: To obtain a valid table_id
+
+    Typical workflow:
+
+        1. list_tables(doc_id) → get table_id
+
+        2. create_column(doc_id, table_id, "col_name", "Text", "Name") → create the column
+
+        3. list_columns(doc_id, table_id) → verify creation
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        column_id: ID de la nouvelle colonne (doit être unique dans la table)
-        column_type: Type de données (Text, Numeric, Bool, Date, etc.)
-        label: Libellé d'affichage de la colonne (optionnel)
-        formula: Formule pour les colonnes calculées (optionnel)
-        widget_options: Options d'affichage (optionnel)
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        column_id: ID of the new column (must be unique within the table)
+
+        column_type: Data type (Text, Numeric, Boolean, Date, etc.)
+
+        label: Column display label (optional)
+
+        formula: Formula for calculated columns (optional)
+
+        widget_options: Display options (optional)
+
+
+
     Returns:
-        Dict avec statut, message et détails de la colonne créée
+
+    Dict with status, message, and details of the created column
     """
     logger.info(f"Tool called: create_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
     
@@ -771,23 +874,35 @@ async def modify_column(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifie les propriétés d'une colonne.
-    
-    Prérequis:
-        - list_columns: Pour obtenir un column_id valide
-    
+    Modifies the properties of a column.
+
+    Prerequisites:
+
+        - list_columns: To obtain a valid column_id
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        column_id: L'ID actuel de la colonne
-        new_column_id: Nouvel ID pour la colonne (optionnel)
-        column_type: Nouveau type de données (optionnel)
-        label: Nouveau libellé d'affichage (optionnel)
-        formula: Nouvelle formule (optionnel)
-        widget_options: Nouvelles options d'affichage (optionnel)
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        column_id: The current ID of the column
+
+        new_column_id: New ID for the column (optional)
+
+        column_type: New data type (optional)
+
+        label: New display label (optional)
+
+        formula: New formula (optional)
+
+        widget_options: New display options (optional)
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
     
@@ -846,19 +961,27 @@ async def delete_column(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Supprime une colonne d'une table.
-    
+    Deletes a column from a table.
+
     Attention:
-        Cette action est irréversible et supprimera toutes les données
-        associées à cette colonne.
-    
+
+    This action is irreversible and will delete all data.
+
+    associated with this column.
+
     Args:
-        doc_id: L'ID du document
-        table_id: L'ID de la table
-        column_id: L'ID de la colonne à supprimer
-        
+
+        doc_id: The ID of the document
+
+        table_id: The table ID
+
+        column_id: The ID of the column to delete
+
+
+
     Returns:
-        Dict avec statut et message de l'opération
+
+    Dict with status and message of the operation
     """
     logger.info(f"Tool called: delete_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
     
