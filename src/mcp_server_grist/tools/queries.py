@@ -37,44 +37,69 @@ async def filter_sql_query(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Exécute une requête SQL de filtrage sur une table Grist.
-    
-    Version simplifiée pour requêtes SQL courantes sans écrire de SQL.
-    Pour requêtes complexes, utiliser execute_sql_query.
-    
-    Prérequis recommandés:
-        - list_tables(doc_id) : Vérifier l'existence de la table
-        - list_columns(doc_id, table_id) : Connaître les colonnes disponibles
-    
-    Alternative à:
-        - list_records : Quand vous avez besoin de filtrer/trier
-        - execute_sql_query : Version simplifiée pour cas courants
-    
-    Flux de travail typique:
-        1. list_columns(doc_id, table_id) → identifier les colonnes
-        2. filter_sql_query(doc_id, table_id, 
-                          where_conditions={"status": "actif"},
-                          order_by="date_creation DESC",
-                          limit=10)
-        3. Traiter les enregistrements retournés
-    
-    Cas d'usage:
-        - Filtrage simple: where_conditions={"status": "actif"}
-        - Filtrage multiple: where_conditions={"status": "actif", "type": "A"}
-        - Tri: order_by="nom" ou order_by="valeur DESC"
+    Executes a filtering SQL query on a Grist table.
+
+    Simplified version for common SQL queries without writing SQL.
+
+    For complex queries, use execute_sql_query.
+
+    Recommended prerequisites:
+
+        - list_tables(doc_id): Check if the table exists
+
+        - list_columns(doc_id, table_id): List the available columns
+
+    Alternative to:
+
+        - list_records: When you need to filter/sort
+
+        - execute_sql_query: Simplified version for common cases
+
+    Typical workflow:
+
+        1. list_columns(doc_id, table_id) → identify the columns
+
+        2. filter_sql_query(doc_id, table_id,
+
+    where_conditions={"status": "actif"},
+
+    order_by="date_creation DESC",
+
+    limit=10)
+
+        3. Process the returned records
+
+    Use case:
+
+        - Simple filtering: where_conditions={"status": "active"}
+
+        - Multiple filtering: where_conditions={"status": "active", "type": "A"}
+
+        - Sort: order_by="name" or order_by="value DESC"
+
         - Pagination: limit=20
-        - Colonnes spécifiques: columns=["nom", "valeur", "date"]
-    
+
+        - Specific columns: columns=["name", "value", "date"]
+
     Args:
-        doc_id: ID du document
-        table_id: ID de la table à requêter
-        columns: Liste des colonnes à retourner (None = toutes)
-        where_conditions: Dict de conditions (AND implicite entre conditions)
-        order_by: Colonne de tri avec direction optionnelle (ex: "nom DESC")
-        limit: Nombre max de résultats
-        
+
+        doc_id: Document ID
+
+        table_id: ID of the table to query
+
+        columns: List of columns to return (None = all)
+
+        where_conditions: Dict of conditions (implicit AND between conditions)
+
+        order_by: Sort column with optional direction (e.g., "name DESC")
+
+        limit: Maximum number of results
+
+
+
     Returns:
-        Dict avec les enregistrements filtrés et métadonnées de requête
+
+    Dict with filtered records and query metadata
     """
     logger.info(f"Tool called: filter_sql_query for doc_id: {doc_id}, table_id: {table_id}")
     
@@ -133,35 +158,53 @@ async def execute_sql_query(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Exécute une requête SQL personnalisée sur un document Grist.
-    
-    Permet d'exécuter des requêtes SQL complexes avec jointures,
-    agrégations et sous-requêtes.
-    
-    Prérequis:
-        - list_tables: Pour connaître les noms des tables disponibles
-        - list_columns: Pour connaître les noms des colonnes à requêter
-    
-    Flux de travail typique:
-        1. list_tables(doc_id) → identifier les tables
-        2. list_columns(doc_id, table_id) → identifier les colonnes
-        3. execute_sql_query(doc_id, "SELECT t1.col1, t2.col2 FROM Table1 t1 
-                                    JOIN Table2 t2 ON t1.id = t2.ref_id
-                                    WHERE t1.status = ?", 
-                          parameters=["active"])
-    
-    Sécurité:
-        - Utilisez toujours des paramètres liés (?) pour les valeurs variables
-        - Seules les requêtes SELECT sont autorisées
-    
+    Executes a custom SQL query on a Grist document.
+
+    Allows you to execute complex SQL queries with joins,
+
+    aggregations and subqueries.
+
+    Prerequisites:
+
+        - list_tables: To see the names of the available tables
+
+        - list_columns: To find out the names of the columns to query
+
+    Typical workflow:
+
+        1. list_tables(doc_id) → identify the tables
+
+        2. list_columns(doc_id, table_id) → identify the columns
+
+        3. execute_sql_query(doc_id, "SELECT t1.col1, t2.col2 FROM Table1 t1
+
+    JOIN Table2 t2 ON t1.id = t2.ref_id
+
+    WHERE t1.status = ?",
+
+    parameters=["active"])
+
+    Security:
+
+        - Always use bound parameters (?) for variable values
+
+        - Only SELECT queries are allowed
+
     Args:
-        doc_id: ID du document
-        sql_query: Requête SQL à exécuter (SELECT uniquement)
-        parameters: Liste des paramètres pour les placeholders '?' dans la requête
-        timeout_ms: Délai d'expiration en millisecondes (défaut: 1000)
-        
+
+        doc_id: Document ID
+
+        sql_query: SQL query to execute (SELECT only)
+
+        parameters: List of parameters for the '?' placeholders in the query
+
+        timeout_ms: Timeout in milliseconds (default: 1000)
+
+
+
     Returns:
-        Dict avec les résultats de la requête et métadonnées
+
+    Dict with query results and metadata
     """
     logger.info(f"Tool called: execute_sql_query for doc_id: {doc_id}")
     
