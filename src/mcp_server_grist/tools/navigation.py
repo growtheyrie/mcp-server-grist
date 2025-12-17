@@ -34,7 +34,7 @@ def register_navigation_tools(mcp_server):
     mcp_server.tool()(get_table_schema)
 
 
-async def list_organizations(ctx) -> Dict[str, Any]:
+async def list_organizations(ctx=None) -> Dict[str, Any]:
     """
     Lists all accessible Grist organizations.
 
@@ -85,7 +85,7 @@ async def list_organizations(ctx) -> Dict[str, Any]:
         }
 
 
-async def describe_organization(org_id: Union[int, str], ctx) -> Dict[str, Any]:
+async def describe_organization(org_id: Union[int, str], ctx=None) -> Dict[str, Any]:
     """
     Gets detailed information about a specific organization.
 
@@ -140,7 +140,7 @@ async def describe_organization(org_id: Union[int, str], ctx) -> Dict[str, Any]:
         }
 
 
-async def list_workspaces(org_id: Union[int, str], ctx) -> Dict[str, Any]:
+async def list_workspaces(org_id: Union[int, str], ctx=None) -> Dict[str, Any]:
     """
     Lists all workspaces in a Grist organization.
 
@@ -152,9 +152,9 @@ async def list_workspaces(org_id: Union[int, str], ctx) -> Dict[str, Any]:
 
     Typical workflow:
 
-        1. list_organizations() → choisir org_id
+        1. list_organizations() → choose org_id
 
-        2. list_workspaces(org_id) → obtenir workspace_id
+        2. list_workspaces(org_id) → get workspace_id
 
         3. list_documents(workspace_id) → navigate through documents
 
@@ -209,7 +209,7 @@ async def list_workspaces(org_id: Union[int, str], ctx) -> Dict[str, Any]:
         }
 
 
-async def describe_workspace(workspace_id: int, ctx) -> Dict[str, Any]:
+async def describe_workspace(workspace_id: int, ctx=None) -> Dict[str, Any]:
     """
     Gets detailed information about a specific workspace.
 
@@ -266,7 +266,7 @@ async def describe_workspace(workspace_id: int, ctx) -> Dict[str, Any]:
         }
 
 
-async def list_documents(workspace_id: int, ctx) -> Dict[str, Any]:
+async def list_documents(workspace_id: int, ctx=None) -> Dict[str, Any]:
     """
     Lists all documents in a Grist workspace.
 
@@ -278,9 +278,9 @@ async def list_documents(workspace_id: int, ctx) -> Dict[str, Any]:
 
     Typical workflow:
 
-        1. list_workspaces(org_id) → obtenir workspace_id
+        1. list_workspaces(org_id) → get workspace_id
 
-        2. list_documents(workspace_id) → obtenir doc_id
+        2. list_documents(workspace_id) → get doc_id
 
         3. list_tables(doc_id) → explore the document tables
 
@@ -335,7 +335,7 @@ async def list_documents(workspace_id: int, ctx) -> Dict[str, Any]:
         }
 
 
-async def describe_document(doc_id: str, ctx) -> Dict[str, Any]:
+async def describe_document(doc_id: str, ctx=None) -> Dict[str, Any]:
     """
     Gets detailed information about a specific document.
 
@@ -392,7 +392,7 @@ async def describe_document(doc_id: str, ctx) -> Dict[str, Any]:
         }
 
 
-async def list_tables(doc_id: str, ctx) -> Dict[str, Any]:
+async def list_tables(doc_id: str, ctx=None) -> Dict[str, Any]:
     """
     Lists all tables in a Grist document.
 
@@ -404,7 +404,7 @@ async def list_tables(doc_id: str, ctx) -> Dict[str, Any]:
 
     Typical workflow:
 
-        1. list_documents(workspace_id) → obtenir doc_id
+        1. list_documents(workspace_id) → get doc_id
 
         2. list_tables(doc_id) → get table_id
 
@@ -459,7 +459,7 @@ async def list_tables(doc_id: str, ctx) -> Dict[str, Any]:
         }
 
 
-async def list_columns(doc_id: str, table_id: str, ctx) -> Dict[str, Any]:
+async def list_columns(doc_id: str, table_id: str, ctx=None) -> Dict[str, Any]:
     """
     Lists all columns in a Grist table.
 
@@ -615,7 +615,7 @@ async def list_records(
         }
 
 
-async def get_table_schema(doc_id: str, table_id: str, ctx) -> Dict[str, Any]:
+async def get_table_schema(doc_id: str, table_id: str, ctx=None) -> Dict[str, Any]:
     """
     Gets the detailed schema of a Grist table.
 
@@ -651,7 +651,7 @@ async def get_table_schema(doc_id: str, table_id: str, ctx) -> Dict[str, Any]:
 
         - message (str): Success or error message
 
-        - schema (Dict): Detailed diagram of the table in frictionless format
+        - schema (Dict): Detailed schema of the table in frictionless format
     """
     logger.info(f"Tool called: get_table_schema with doc_id: {doc_id}, table_id: {table_id}")
     
