@@ -16,7 +16,11 @@ RUN pip install --no-cache-dir -U pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copier le reste du code
+COPY src ./src
 COPY . .
+
+# Installez le paquet pour que Python puisse trouver le module mcp_server_grist
+RUN pip install -e .
 
 # Exposer les ports pour les modes HTTP
 EXPOSE 3000
@@ -25,11 +29,8 @@ EXPOSE 3000
 ENV GRIST_API_KEY=""
 ENV GRIST_API_HOST="https://grist.numerique.gouv.fr/api"
 
-# Point d'entrée avec support des différents modes de transport
-ENTRYPOINT ["python", "-m", "mcp_server_grist"]
-
 # Utilisez par défaut streamable-http pour le déploiement dans le cloud
-CMD ["--transport", "streamable-http", "--host", "0.0.0.0", "--port", "3000", "--path", "/mcp"]
+CMD ["python", "-m", "mcp_server_grist", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "3000", "--path", "/mcp"]
 
 # Exemples d'utilisation du conteneur:
 # Mode stdio (par défaut):
