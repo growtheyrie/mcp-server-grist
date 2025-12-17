@@ -27,7 +27,7 @@ EXPOSE 3000
 
 # Définir les variables d'environnement pour la configuration de Grist
 ENV GRIST_API_KEY=""
-ENV GRIST_API_HOST="https://grist.numerique.gouv.fr/api"
+ENV GRIST_API_HOST="https://docs.getgrist.com/api"
 
 # Utilisez par défaut streamable-http pour le déploiement dans le cloud
 CMD ["python", "-m", "mcp_server_grist", "--transport", "streamable-http", "--host", "0.0.0.0", "--port", "3000", "--path", "/mcp"]
