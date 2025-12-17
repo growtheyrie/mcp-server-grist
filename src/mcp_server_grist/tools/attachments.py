@@ -34,18 +34,25 @@ async def list_attachments(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Liste les pièces jointes d'un document Grist.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Lists the attachments of a Grist document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document
-        sort: Colonne de tri (optionnel)
-        limit: Nombre maximum de résultats (optionnel)
-        
+
+        doc_id: The ID of the document
+
+        Sort: Sort column (optional)
+
+        limit: Maximum number of results (optional)
+
+
+
     Returns:
-        Dict avec statut, message et liste des pièces jointes
+
+    Dict with status, message, and list of attachments
     """
     logger.info(f"Tool called: list_attachments with doc_id: {doc_id}")
     
@@ -80,17 +87,23 @@ async def get_attachment_info(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Obtient les métadonnées d'une pièce jointe.
-    
-    Prérequis:
-        - list_attachments: Pour obtenir un attachment_id valide
-    
+    Retrieves the metadata of an attachment.
+
+    Prerequisites:
+
+        - list_attachments: To obtain a valid attachment_id
+
     Args:
-        doc_id: L'ID du document
-        attachment_id: L'ID de la pièce jointe
-        
+
+        doc_id: The ID of the document
+
+        attachment_id: The ID of the attachment
+
+
+
     Returns:
-        Dict avec statut, message et métadonnées de la pièce jointe
+
+    Dict with status, message, and attachment metadata
     """
     logger.info(f"Tool called: get_attachment_info with doc_id: {doc_id}, attachment_id: {attachment_id}")
     
@@ -123,18 +136,25 @@ async def download_attachment(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Télécharge le contenu d'une pièce jointe.
-    
-    Prérequis:
-        - list_attachments: Pour obtenir un attachment_id valide
-        - get_attachment_info: Pour obtenir les métadonnées (type, nom)
-    
+    Downloads the contents of an attachment.
+
+    Prerequisites:
+
+        - list_attachments: To obtain a valid attachment_id
+
+        - get_attachment_info: To obtain the metadata (type, name)
+
     Args:
-        doc_id: L'ID du document
-        attachment_id: L'ID de la pièce jointe
-        
+
+        doc_id: The ID of the document
+
+        attachment_id: The ID of the attachment
+
+
+
     Returns:
-        Dict avec statut, message et contenu encodé en base64
+
+    Dict with status, message and content encoded in base64
     """
     logger.info(f"Tool called: download_attachment with doc_id: {doc_id}, attachment_id: {attachment_id}")
     
@@ -183,19 +203,27 @@ async def upload_attachment(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Téléverse une pièce jointe dans un document Grist.
-    
-    Prérequis:
-        - list_documents: Pour obtenir un doc_id valide
-    
+    Uploads an attachment to a Grist document.
+
+    Prerequisites:
+
+        - list_documents: To obtain a valid doc_id
+
     Args:
-        doc_id: L'ID du document
-        filename: Nom du fichier
-        content_base64: Contenu du fichier encodé en base64
-        content_type: Type MIME du fichier
-        
+
+        doc_id: The ID of the document
+
+        filename: File name
+
+        content_base64: Content of the base64-encoded file
+
+        content_type: MIME type of the file
+
+
+
     Returns:
-        Dict avec statut, message et ID de la pièce jointe créée
+
+    Dict with status, message, and ID of the created attachment
     """
     logger.info(f"Tool called: upload_attachment with doc_id: {doc_id}, filename: {filename}")
     
