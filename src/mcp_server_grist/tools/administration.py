@@ -46,6 +46,7 @@ def register_admin_tools(mcp_server):
     mcp_server.tool()(create_column)
     mcp_server.tool()(modify_column)
     mcp_server.tool()(delete_column)
+    mcp_server.tool()(get_formula_helpers)
 
 
 # --- Organisation Management ---
@@ -1004,4 +1005,69 @@ async def delete_column(
         return {
             "success": False,
             "message": f"Erreur lors de la deletion de la colonne: {str(e)}"
+        }
+
+
+async def get_formula_helpers(
+    doc_id: str,
+    table_id: str,
+    ctx=None
+) -> Dict[str, Any]:
+    """
+    Gets formula construction helpers for a Grist table.
+    
+    Provides a mapping of column names to their correct formula references,
+    helping to build formulas with proper syntax.
+    
+    Prerequisites:
+        - list_tables: To obtain a valid table_id
+    
+    Typical workflow:
+        1. list_tables(doc_id) → get table_id
+        2. get_formula_helpers(doc_id, table_id) → get formula reference map
+        3. Use the references to construct formulas correctly
+    
+    Use case:
+        - Building formulas that reference other columns
+        - Avoiding case sensitivity errors in column references
+        - Understanding the correct $ColumnID syntax
+    
+    Args:
+        doc_id: The ID of the document
+        table_id: The table ID
+    
+    Returns:
+        Dict with:
+            - success (bool): Indicates whether the operation was successful
+            - message (str): Success or error message
+            - formula_map (Dict): Mapping with column info and formula references
+    """
+    logger.info(f"Tool called: get_formula_helpers with doc_id: {doc_id}, table_id: {table_id}")
+    
+    try:
+        client = get_client(ctx)
+        if not client:
+            return {
+                "success": False,
+                "message": "Client Grist non configuré"
+            }
+        
+        formula_map = await client.get_formula_column_map(doc_id, table_id)
+        
+        if "error" in formula_map:
+            return {
+                "success": False,
+                "message": formula_map["error"]
+            }
+        
+        return {
+            "success": True,
+            "message": f"Formula helpers retrieved for table {table_id}",
+            "formula_map": formula_map
+        }
+    except Exception as e:
+        logger.error(f"Error getting formula helpers: {e}")
+        return {
+            "success": False,
+            "message": f"Erreur lors de la récupération des helpers de formule: {str(e)}"
         }
