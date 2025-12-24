@@ -682,7 +682,7 @@ async def create_table(
         table_data = {
             "tables": [
                 {
-                    "tableId": table_id,
+                    "id": table_id,
                     "columns": columns or []
                 }
             ]
