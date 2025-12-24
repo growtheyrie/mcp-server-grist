@@ -172,7 +172,7 @@ async def create_workspace(
 
     Typical workflow:
 
-        1. list_organizations() → obtenir org_id
+        1. list_organizations() → get org_id
 
         2. create_workspace(org_id, "Name") → create the workspace
 
