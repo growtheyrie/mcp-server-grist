@@ -37,14 +37,14 @@ def register_all_tools(mcp_server):
     # Administration
     register_admin_tools(mcp_server)
     
-    # Gestion des accès
-    register_access_tools(mcp_server)
+    # Gestion des accès - retirer
+    # register_access_tools(mcp_server)
     
     # Export et téléchargement
     register_export_tools(mcp_server)
     
-    # Pièces jointes
-    register_attachment_tools(mcp_server)
+    # Pièces jointes - retirer
+    # register_attachment_tools(mcp_server)
     
     # Webhooks
     register_webhook_tools(mcp_server)
