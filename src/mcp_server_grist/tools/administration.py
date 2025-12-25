@@ -637,7 +637,7 @@ async def delete_document_history(
 async def create_table(
     doc_id: str, 
     table_id: str,
-    columns: Optional[List[Dict[str, Any]]] = None,
+    columns: List[Dict[str, Any]],
     ctx=None
 ) -> Dict[str, Any]:
     """
@@ -661,7 +661,7 @@ async def create_table(
 
         table_id: ID of the new table (must be unique within the document)
 
-        columns: List of columns to create (optional)
+        columns: List of columns to create
 
 
 
@@ -683,7 +683,7 @@ async def create_table(
             "tables": [
                 {
                     "id": table_id,
-                    "columns": columns or []
+                    "columns": columns
                 }
             ]
         }
