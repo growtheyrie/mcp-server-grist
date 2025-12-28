@@ -26,6 +26,51 @@ def mask_api_key(api_key: str) -> str:
         return f"{api_key[:5]}...{api_key[-5:]}"
     return "[SET]"
 
+# --- Helper Method for DateTime Conversion ---
+import re
+from datetime import datetime, timezone, timedelta
+
+def parse_datetime_to_unix(datetime_str: str) -> int:
+    """
+    Internal helper to convert datetime string to Unix timestamp.
+    
+    Format: "YYYY-MM-DD HH:mm UTC +offset"
+    Example: "2025-12-28 07:52 UTC +8"
+    
+    Note: Seconds default to 00 if not specified.
+    
+    Args:
+        datetime_str: DateTime with UTC offset
+        
+    Returns:
+        Unix timestamp (int)
+        
+    Raises:
+        ValueError: If format is invalid
+    """
+    # Pattern: "YYYY-MM-DD HH:mm UTC ±offset"
+    pattern = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC ([+-]\d+)'
+    match = re.match(pattern, datetime_str.strip())
+    
+    if not match:
+        raise ValueError(
+            f"Invalid datetime format. Expected: 'YYYY-MM-DD HH:mm UTC +8', "
+            f"got: '{datetime_str}'"
+        )
+    
+    date_part, time_part, offset_hours = match.groups()
+    
+    # Parse date and time (seconds default to 00)
+    dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
+    
+    # Create timezone with offset
+    offset = timedelta(hours=int(offset_hours))
+    tz = timezone(offset)
+    dt_aware = dt.replace(tzinfo=tz)
+    
+    # Convert to Unix timestamp
+    return int(dt_aware.timestamp())
+
 class GristClient:
     """Client pour l'API Grist."""
     
@@ -552,7 +597,7 @@ class GristClient:
         """Vide la file d'attente des webhooks pour un document."""
         logger.debug(f"Clearing webhook queue for document {doc_id}")
         await self._request("DELETE", f"/docs/{doc_id}/webhooks/queue")
-
+    
     # --- Helper Methods for Validation and Error Enhancement ---
     
     async def validate_table_exists(self, doc_id: str, table_id: str) -> Dict[str, Any]:
