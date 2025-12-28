@@ -28,12 +28,10 @@ def register_record_tools(mcp_server):
     mcp_server.tool()(delete_grist_records)
 
 
-async def add_grist_records(
-    doc_id: str, 
-    table_id: str, 
-    records: List[Dict[str, Any]], 
-    ctx=None
-) -> Dict[str, Any]:
+async def add_grist_records(doc_id: str,
+                            table_id: str,
+                            records: List[Dict[str, Any]],
+                            ctx=None) -> Dict[str, Any]:
     """
     Adds records to a Grist table.
 	
@@ -143,8 +141,10 @@ async def add_grist_records(
 	
     }
     """
-    logger.info(f"Tool called: add_grist_records for doc_id: {doc_id}, table_id: {table_id}")
-    
+    logger.info(
+        f"Tool called: add_grist_records for doc_id: {doc_id}, table_id: {table_id}"
+    )
+
     try:
         client = get_client(ctx)
         if not client:
@@ -153,12 +153,13 @@ async def add_grist_records(
                 "message": "Client Grist non configuré",
                 "record_ids": []
             }
-            
+
         record_ids = await client.add_records(doc_id, table_id, records)
-        
+
         return {
             "success": True,
-            "message": f"{len(record_ids)} enregistrements ajoutés avec succès",
+            "message":
+            f"{len(record_ids)} enregistrements ajoutés avec succès",
             "record_ids": record_ids
         }
     except Exception as e:
@@ -170,12 +171,10 @@ async def add_grist_records(
         }
 
 
-async def add_grist_records_safe(
-    doc_id: str, 
-    table_id: str, 
-    records: List[Dict[str, Any]], 
-    ctx=None
-) -> Dict[str, Any]:
+async def add_grist_records_safe(doc_id: str,
+                                 table_id: str,
+                                 records: List[Dict[str, Any]],
+                                 ctx=None) -> Dict[str, Any]:
     """
     Adds records with prior validation of the structure.
 	
@@ -246,8 +245,10 @@ async def add_grist_records_safe(
 	
     and IDs of the records created if the operation was successful
     """
-    logger.info(f"Tool called: add_grist_records_safe for doc_id: {doc_id}, table_id: {table_id}")
-    
+    logger.info(
+        f"Tool called: add_grist_records_safe for doc_id: {doc_id}, table_id: {table_id}"
+    )
+
     try:
         client = get_client(ctx)
         if not client:
@@ -256,60 +257,71 @@ async def add_grist_records_safe(
                 "message": "Client Grist non configuré",
                 "record_ids": []
             }
-        
+
         # Validation 1: Vérifier si la table existe
         table_validation = await client.validate_table_exists(doc_id, table_id)
         if not table_validation.get("exists", False):
             return {
-                "success": False,
-                "message": table_validation.get("error", f"Table '{table_id}' not found"),
-                "available_tables": table_validation.get("available_tables", []),
-                "suggestion": table_validation.get("suggestion"),
+                "success":
+                False,
+                "message":
+                table_validation.get("error", f"Table '{table_id}' not found"),
+                "available_tables":
+                table_validation.get("available_tables", []),
+                "suggestion":
+                table_validation.get("suggestion"),
                 "record_ids": []
             }
-        
+
         # Validation 2: Vérifier les names de colonnes si des enregistrements sont fournis
         if records and isinstance(records, list) and len(records) > 0:
             # Extraire tous les names de colonnes utilisés
             column_names = set()
             for record in records:
                 column_names.update(record.keys())
-            
+
             # Valider l'existence des colonnes
-            columns_validation = await client.validate_columns_exist(doc_id, table_id, list(column_names))
-            if not columns_validation.get("valid", True) and "error" not in columns_validation:
+            columns_validation = await client.validate_columns_exist(
+                doc_id, table_id, list(column_names))
+            if not columns_validation.get(
+                    "valid", True) and "error" not in columns_validation:
                 return {
-                    "success": False,
-                    "message": f"Some columns do not exist in table '{table_id}'",
-                    "missing_columns": columns_validation.get("missing_columns", []),
-                    "suggestions": columns_validation.get("suggestions", {}),
-                    "available_columns": columns_validation.get("available_columns", []),
+                    "success":
+                    False,
+                    "message":
+                    f"Some columns do not exist in table '{table_id}'",
+                    "missing_columns":
+                    columns_validation.get("missing_columns", []),
+                    "suggestions":
+                    columns_validation.get("suggestions", {}),
+                    "available_columns":
+                    columns_validation.get("available_columns", []),
                     "record_ids": []
                 }
-        
+
         # Si tout est valide, ajouter les enregistrements
         record_ids = await client.add_records(doc_id, table_id, records)
-        
+
         return {
             "success": True,
-            "message": f"{len(record_ids)} enregistrements ajoutés avec succès après validation",
+            "message":
+            f"{len(record_ids)} enregistrements ajoutés avec succès après validation",
             "record_ids": record_ids
         }
     except Exception as e:
         logger.error(f"Error in add_grist_records_safe: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de l'ajout sécurisé des enregistrements: {str(e)}",
+            "message":
+            f"Erreur lors de l'ajout sécurisé des enregistrements: {str(e)}",
             "record_ids": []
         }
 
 
-async def update_grist_records(
-    doc_id: str, 
-    table_id: str, 
-    records: List[Dict[str, Any]], 
-    ctx=None
-) -> Dict[str, Any]:
+async def update_grist_records(doc_id: str,
+                               table_id: str,
+                               records: List[Dict[str, Any]],
+                               ctx=None) -> Dict[str, Any]:
     """
     Updates existing records in a Grist table.
 
@@ -341,8 +353,10 @@ async def update_grist_records(
 
     Dict with updated status, message, and record IDs
     """
-    logger.info(f"Tool called: update_grist_records for doc_id: {doc_id}, table_id: {table_id}")
-    
+    logger.info(
+        f"Tool called: update_grist_records for doc_id: {doc_id}, table_id: {table_id}"
+    )
+
     try:
         client = get_client(ctx)
         if not client:
@@ -351,38 +365,39 @@ async def update_grist_records(
                 "message": "Client Grist non configuré",
                 "record_ids": []
             }
-        
+
         # Vérifier que tous les enregistrements ont un ID
         for i, record in enumerate(records):
             if "id" not in record:
                 return {
                     "success": False,
-                    "message": f"L'enregistrement à l'index {i} n'a pas d'ID. Chaque enregistrement doit contenir un champ 'id'.",
+                    "message":
+                    f"L'enregistrement à l'index {i} n'a pas d'ID. Chaque enregistrement doit contenir un champ 'id'.",
                     "record_ids": []
                 }
-        
+
         record_ids = await client.update_records(doc_id, table_id, records)
-        
+
         return {
             "success": True,
-            "message": f"{len(record_ids)} enregistrements mis à jour avec succès",
+            "message":
+            f"{len(record_ids)} enregistrements mis à jour avec succès",
             "record_ids": record_ids
         }
     except Exception as e:
         logger.error(f"Error in update_grist_records: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de la update des enregistrements: {str(e)}",
+            "message":
+            f"Erreur lors de la update des enregistrements: {str(e)}",
             "record_ids": []
         }
 
 
-async def delete_grist_records(
-    doc_id: str, 
-    table_id: str, 
-    record_ids: List[int], 
-    ctx=None
-) -> Dict[str, Any]:
+async def delete_grist_records(doc_id: str,
+                               table_id: str,
+                               record_ids: List[int],
+                               ctx=None) -> Dict[str, Any]:
     """
     Deletes records from a Grist table.
 
@@ -410,33 +425,36 @@ async def delete_grist_records(
 
     Dict with status and confirmation message
     """
-    logger.info(f"Tool called: delete_grist_records for doc_id: {doc_id}, table_id: {table_id}")
-    
+    logger.info(
+        f"Tool called: delete_grist_records for doc_id: {doc_id}, table_id: {table_id}"
+    )
+
     try:
         client = get_client(ctx)
         if not client:
-            return {
-                "success": False,
-                "message": "Client Grist non configuré"
-            }
-        
+            return {"success": False, "message": "Client Grist non configuré"}
+
         # Vérifier que tous les IDs sont des entiers
         for i, record_id in enumerate(record_ids):
             if not isinstance(record_id, int):
                 return {
-                    "success": False,
-                    "message": f"L'ID à l'index {i} ({record_id}) n'est pas un entier. Tous les IDs doivent être des entiers."
+                    "success":
+                    False,
+                    "message":
+                    f"L'ID à l'index {i} ({record_id}) n'est pas un entier. Tous les IDs doivent être des entiers."
                 }
-        
+
         await client.delete_records(doc_id, table_id, record_ids)
-        
+
         return {
             "success": True,
-            "message": f"{len(record_ids)} enregistrements supprimés avec succès"
+            "message":
+            f"{len(record_ids)} enregistrements supprimés avec succès"
         }
     except Exception as e:
         logger.error(f"Error in delete_grist_records: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de la deletion des enregistrements: {str(e)}"
+            "message":
+            f"Erreur lors de la deletion des enregistrements: {str(e)}"
         }
