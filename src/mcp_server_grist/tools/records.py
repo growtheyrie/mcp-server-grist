@@ -36,13 +36,13 @@ async def add_grist_records(
 ) -> Dict[str, Any]:
     """
     Adds records to a Grist table.
-
+	
     CRITICAL: Special Column Type Encoding (GristObjCode)
     =====================================================
-    
+	
     Grist uses type-tagged encoding for complex column types. You MUST use
     the correct format or the API will reject your records.
-
+	
     COMPLEX COLUMN TYPES (Require Special Encoding)
     ------------------------------------------------
     
@@ -50,17 +50,17 @@ async def add_grist_records(
         Format: ["L", item1, item2, ...]
         Example: {"Tags": ["L", "Active", "Inactive"]}
         Empty: {"Tags": ["L"]}
-
+	
     **Reference:**
         Format: ["R", table_id, row_id]
         Example: {"ProjectLead": ["R", "People", 17]}
         Empty: {"ProjectLead": ["R"]}
-
+	
     **Reference List (Multiple References):**
         Format: ["r", table_id, row_id_list]
         Example: {"ProjectMembers": ["r", "People", [15, 16]]}
         Empty: {"ProjectMembers": ["r"]}
-
+	
     **DateTime (Date with Time) - REQUIRES "UTC" PARAMETER:**
         Format: ["D", unix_timestamp, "UTC"]
         Example: {"CreatedAt": ["D", 1766879520, "UTC"]}
@@ -74,20 +74,20 @@ async def add_grist_records(
         3. Format: {"AppointmentTime": ["D", timestamp, "UTC"]}
         
         WARNING: Omitting "UTC" parameter causes #IndexError in Grist UI!
-
+	
     **Date (Date Only, No Time):**
         Format: ["d", unix_timestamp]
         Example: {"StartDate": ["d", 1766851200]}
-
+	
         To specify date, use format: "YYYY-MM-DD UTC +offset"
         Example input: "2025-12-28 UTC +8"
-        
+    
 	Conversion workflow:
 	1. User specifies: "2025-12-28 UTC +8"
         2. Use same datetime format but time component is for reference only:
         timestamp = parse_datetime_to_unix("2025-12-28 00:00 UTC +8")
         3. Format: {"StartDate": ["d", timestamp]}
-
+	
     REGULAR COLUMN TYPES (No Special Encoding Required)
     ----------------------------------------------------
     
@@ -97,7 +97,7 @@ async def add_grist_records(
     - **Numeric:** 42 or 3.14
     - **Choice (Single Selection):** "High"
     - **Boolean:** true or false
-
+	
     COMPLETE EXAMPLE
     ----------------
     ```python
@@ -114,33 +114,33 @@ async def add_grist_records(
             "Active": true                                  # Boolean
         }]
     ```
-
+	
     Args:
-
+	
         doc_id: The ID of the Grist document
-
+	
         table_id: The table ID
-
+	
         records: List of records to add. Each record is a dictionary
-
+	
         where the keys are the column names and the values ​​are the data.
-
+	
         Example: [{"name": "Dupont", "first name": "Jean", "age": 35}]
-
-
-
+	
+	
+	
     Returns:
-
+	
     Dict with status, message and IDs of created records:
-
+	
     {
-
+	
     "success": True/False,
-
+	
     "message": "Success or error message",
-
+	
     "record_ids": [1, 2, 3] # IDs of the created records
-
+	
     }
     """
     logger.info(f"Tool called: add_grist_records for doc_id: {doc_id}, table_id: {table_id}")
@@ -178,21 +178,21 @@ async def add_grist_records_safe(
 ) -> Dict[str, Any]:
     """
     Adds records with prior validation of the structure.
-
+	
     This secure version validates the existence of the table and columns
-
+	
     before adding the records, and suggests corrections if necessary.
-
+	
     CRITICAL: Special Column Type Encoding (GristObjCode)
     =====================================================
     
     Same encoding requirements as add_grist_records. See add_grist_records
     
     docstring for complete GristObjCode documentation.
-
+	
     KEY POINTS
     ----------
-                            
+    
     **Choice List:**        ["L", "item1", "item2"]
     **Reference**           ["R", table_id, row_id]
     **Reference List:**     ["r", table_id, row_id_list]
@@ -201,7 +201,7 @@ async def add_grist_records_safe(
     
     **Regular types:**      Text, Numeric, Choice(single), Boolean
                             use plain values without encoding.
-
+	
     DATETIME FORMAT
     ---------------
     
@@ -209,7 +209,7 @@ async def add_grist_records_safe(
     Example: "2025-12-28 07:52 UTC +8"
     
     The helper function parse_datetime_to_unix() converts this to Unix timestamp.
-
+	
     DATE FORMAT
     ---------------
     When specifying date values, use: "YYYY-MM-DD UTC +offset"
@@ -217,33 +217,33 @@ async def add_grist_records_safe(
     
     The helper function parse_datetime_to_unix() converts this to Unix timestamp.
     Use the function argument "2025-12-28 00:00 UTC +8"
-
+	
     Prerequisites:
-
+	
         - list_tables, list_columns: performed automatically internally
-
+	
     Typical workflow:
-
+	
         1. get_table_schema(doc_id, table_id) → understand the types
-
+	
         2. add_grist_records_safe(doc_id, table_id, records) → validated insertion
-
+	
         3. list_records(doc_id, table_id, limit=5) → check the result
-
+	
     Args:
-
+	
         doc_id: The ID of the document
-
+	
         table_id: The table ID
-
+	
         Records: List of records to add
-
-
-
+	
+	
+	
     Returns:
-
+	
     Dict with status, message, and possibly correction suggestions
-
+	
     and IDs of the records created if the operation was successful
     """
     logger.info(f"Tool called: add_grist_records_safe for doc_id: {doc_id}, table_id: {table_id}")
