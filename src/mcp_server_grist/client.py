@@ -17,6 +17,9 @@ from dotenv import load_dotenv
 from .models import GristColumn, GristDocument, GristOrg, GristRecord, GristTable, GristWorkspace
 from .version import __version__
 
+import re
+from datetime import datetime, timezone, timedelta
+
 # Configurer le logger
 logger = logging.getLogger("grist_mcp_server")
 
