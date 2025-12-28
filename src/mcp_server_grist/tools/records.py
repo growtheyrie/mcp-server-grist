@@ -77,13 +77,12 @@ async def add_grist_records(doc_id: str,
         Format: ["d", unix_timestamp]
         Example: {"StartDate": ["d", 1766851200]}
 	
-        To specify date, use format: "YYYY-MM-DD UTC +offset"
-        Example input: "2025-12-28 UTC +8"
+        To specify date, use format: "YYYY-MM-DD 00:00 UTC +offset"
+        Example input: "2025-12-28 00:00 UTC +8"
     
-	Conversion workflow:
-	1. User specifies: "2025-12-28 UTC +8"
-        2. Use same datetime format but time component is for reference only:
-        timestamp = parse_datetime_to_unix("2025-12-28 00:00 UTC +8")
+	    Conversion workflow:
+	    1. User specifies: "2025-12-28 UTC +8"
+        2. timestamp = parse_datetime_to_unix("2025-12-28 00:00 UTC +8")
         3. Format: {"StartDate": ["d", timestamp]}
 	
     REGULAR COLUMN TYPES (No Special Encoding Required)
@@ -104,7 +103,7 @@ async def add_grist_records(doc_id: str,
             "Name": "Q1 Planning",				            # Text
             "Priority": "High",                             # Choice (single)
             "Tags": ["L", "Urgent", "Planning"],            # Choice List
-            "Gift": ["R", "Swag", 3]			            # Reference
+            "Gift": ["R", "Swag", 3],			            # Reference
             "AssignedTo": ["r", "Team", [8, 9, 10]],        # Reference List
             "StartDate": ["d", 1752595200],                 # Date
             "CreatedAt": ["D", 1746779700, "UTC"],          # DateTime
@@ -193,7 +192,7 @@ async def add_grist_records_safe(doc_id: str,
     ----------
     
     **Choice List:**        ["L", "item1", "item2"]
-    **Reference**           ["R", table_id, row_id]
+    **Reference:**          ["R", table_id, row_id]
     **Reference List:**     ["r", table_id, row_id_list]
     **DateTime:**           ["D", unix_timestamp, "UTC"]  ← Must include "UTC"!
     **Date:**               ["d", unix_timestamp]
@@ -211,8 +210,8 @@ async def add_grist_records_safe(doc_id: str,
 	
     DATE FORMAT
     ---------------
-    When specifying date values, use: "YYYY-MM-DD UTC +offset"
-    Example: "2025-12-28 UTC +8"
+    When specifying date values, use: "YYYY-MM-DD 00:00 UTC +offset"
+    Example: "2025-12-28 00:00 UTC +8"
     
     The helper function parse_datetime_to_unix() converts this to Unix timestamp.
     Use the function argument "2025-12-28 00:00 UTC +8"
