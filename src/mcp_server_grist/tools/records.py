@@ -165,7 +165,7 @@ async def add_grist_records(doc_id: str,
                 "record_ids": []
             }
 
-		# Preprocess datetime strings
+       # Preprocess datetime strings
         records = preprocess_datetime_values(records)
 
         record_ids = await client.add_records(doc_id, table_id, records)
@@ -288,7 +288,7 @@ async def add_grist_records_safe(doc_id: str,
                     "record_ids": []
                 }
 
-		# Preprocess datetime strings
+        # Preprocess datetime strings
         records = preprocess_datetime_values(records)
 
         # Si tout est valide, ajouter les enregistrements
