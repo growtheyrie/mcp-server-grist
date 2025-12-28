@@ -27,17 +27,13 @@ def mask_api_key(api_key: str) -> str:
     return "[SET]"
 
 # --- Helper Method for DateTime Conversion ---
-import re
-from datetime import datetime, timezone, timedelta
-
 def parse_datetime_to_unix(datetime_str: str) -> int:
     """
-    Internal helper to convert datetime string to Unix timestamp.
+    Convert datetime string to Unix timestamp.
     
-    Format: "YYYY-MM-DD HH:mm UTC +offset"
-    Example: "2025-12-28 07:52 UTC +8"
-    
-    Note: Seconds default to 00 if not specified.
+    Supports two formats:
+    - DateTime: "2025-12-28 07:52 UTC +8"
+    - Date: "2025-12-28 UTC +8"
     
     Args:
         datetime_str: DateTime with UTC offset
@@ -48,27 +44,34 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
     Raises:
         ValueError: If format is invalid
     """
-    # Pattern: "YYYY-MM-DD HH:mm UTC ±offset"
-    pattern = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC ([+-]\d+)'
-    match = re.match(pattern, datetime_str.strip())
+    datetime_str = datetime_str.strip()
     
-    if not match:
-        raise ValueError(
-            f"Invalid datetime format. Expected: 'YYYY-MM-DD HH:mm UTC +8', "
-            f"got: '{datetime_str}'"
-        )
+    # Try DateTime format first: "YYYY-MM-DD HH:MM UTC +offset"
+    pattern_datetime = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC ([+-]\d+)'
+    match = re.match(pattern_datetime, datetime_str)
     
-    date_part, time_part, offset_hours = match.groups()
-    
-    # Parse date and time (seconds default to 00)
-    dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
+    if match:
+        date_part, time_part, offset_hours = match.groups()
+        dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
+    else:
+        # Try Date format: "YYYY-MM-DD UTC +offset"
+        pattern_date = r'(\d{4}-\d{2}-\d{2}) UTC ([+-]\d+)'
+        match = re.match(pattern_date, datetime_str)
+        
+        if not match:
+            raise ValueError(
+                f"Invalid datetime format. Expected: 'YYYY-MM-DD HH:MM UTC +8' or 'YYYY-MM-DD UTC +8', "
+                f"got: '{datetime_str}'"
+            )
+        
+        date_part, offset_hours = match.groups()
+        dt = datetime.strptime(f"{date_part} 00:00", "%Y-%m-%d %H:%M")
     
     # Create timezone with offset
     offset = timedelta(hours=int(offset_hours))
     tz = timezone(offset)
     dt_aware = dt.replace(tzinfo=tz)
     
-    # Convert to Unix timestamp
     return int(dt_aware.timestamp())
 
 class GristClient:
