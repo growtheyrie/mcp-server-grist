@@ -8,7 +8,7 @@ dans les tables Grist: ajout, update et deletion.
 import logging
 from typing import Any, Dict, List, Optional, Union
 
-from ..client import get_client
+from ..client import get_client, parse_datetime_to_unix
 
 # Configurer le logger
 logger = logging.getLogger("grist_mcp_server")
@@ -37,6 +37,84 @@ async def add_grist_records(
     """
     Adds records to a Grist table.
 
+    CRITICAL: Special Column Type Encoding (GristObjCode)
+    =====================================================
+    
+    Grist uses type-tagged encoding for complex column types. You MUST use
+    the correct format or the API will reject your records.
+
+    COMPLEX COLUMN TYPES (Require Special Encoding)
+    ------------------------------------------------
+    
+    **Choice List (Multiple Selection):**
+        Format: ["L", item1, item2, ...]
+        Example: {"Tags": ["L", "Active", "Inactive"]}
+        Empty: {"Tags": ["L"]}
+
+    **Reference:**
+        Format: ["R", table_id, row_id]
+        Example: {"ProjectLead": ["R", "People", 17]}
+        Empty: {"ProjectLead": ["R"]}
+
+    **Reference List (Multiple References):**
+        Format: ["r", table_id, row_id_list]
+        Example: {"ProjectMembers": ["r", "People", [15, 16]]}
+        Empty: {"ProjectMembers": ["r"]}
+
+    **DateTime (Date with Time) - REQUIRES "UTC" PARAMETER:**
+        Format: ["D", unix_timestamp, "UTC"]
+        Example: {"CreatedAt": ["D", 1766879520, "UTC"]}
+        
+        To specify datetime, use format: "YYYY-MM-DD HH:mm UTC +offset"
+        Example input: "2025-12-28 07:52 UTC +8"
+        
+        Conversion workflow:
+        1. User specifies: "2025-12-28 07:52 UTC +8"
+        2. Convert: timestamp = parse_datetime_to_unix("2025-12-28 07:52 UTC +8")
+        3. Format: {"AppointmentTime": ["D", timestamp, "UTC"]}
+        
+        WARNING: Omitting "UTC" parameter causes #IndexError in Grist UI!
+
+    **Date (Date Only, No Time):**
+        Format: ["d", unix_timestamp]
+        Example: {"StartDate": ["d", 1766851200]}
+
+        To specify date, use format: "YYYY-MM-DD UTC +offset"
+        Example input: "2025-12-28 UTC +8"
+        
+	Conversion workflow:
+	1. User specifies: "2025-12-28 UTC +8"
+        2. Use same datetime format but time component is for reference only:
+        timestamp = parse_datetime_to_unix("2025-12-28 00:00 UTC +8")
+        3. Format: {"StartDate": ["d", timestamp]}
+
+    REGULAR COLUMN TYPES (No Special Encoding Required)
+    ----------------------------------------------------
+    
+    These types use plain values without GristObjCode encoding:
+    
+    - **Text:** "Hello World"
+    - **Numeric:** 42 or 3.14
+    - **Choice (Single Selection):** "High"
+    - **Boolean:** true or false
+
+    COMPLETE EXAMPLE
+    ----------------
+    ```python
+        # Example record with mixed column types
+        records = [{
+            "Name": "Q1 Planning",				            # Text
+            "Priority": "High",                             # Choice (single)
+            "Tags": ["L", "Urgent", "Planning"],            # Choice List
+            "Gift": ["R", "Swag", 3]			            # Reference
+            "AssignedTo": ["r", "Team", [8, 9, 10]],        # Reference List
+            "StartDate": ["d", 1752595200],                 # Date
+            "CreatedAt": ["D", 1746779700, "UTC"],          # DateTime
+            "Budget": 50000,                                # Numeric
+            "Active": true                                  # Boolean
+        }]
+    ```
+
     Args:
 
         doc_id: The ID of the Grist document
@@ -45,7 +123,7 @@ async def add_grist_records(
 
         records: List of records to add. Each record is a dictionary
 
-    where the keys are the column names and the values ​​are the data.
+        where the keys are the column names and the values ​​are the data.
 
         Example: [{"name": "Dupont", "first name": "Jean", "age": 35}]
 
@@ -104,6 +182,41 @@ async def add_grist_records_safe(
     This secure version validates the existence of the table and columns
 
     before adding the records, and suggests corrections if necessary.
+
+    CRITICAL: Special Column Type Encoding (GristObjCode)
+    =====================================================
+    
+    Same encoding requirements as add_grist_records. See add_grist_records
+    
+    docstring for complete GristObjCode documentation.
+
+    KEY POINTS
+    ----------
+                            
+    **Choice List:**        ["L", "item1", "item2"]
+    **Reference**           ["R", table_id, row_id]
+    **Reference List:**     ["r", table_id, row_id_list]
+    **DateTime:**           ["D", unix_timestamp, "UTC"]  ← Must include "UTC"!
+    **Date:**               ["d", unix_timestamp]
+    
+    **Regular types:**      Text, Numeric, Choice(single), Boolean
+                            use plain values without encoding.
+
+    DATETIME FORMAT
+    ---------------
+    
+    When specifying datetime values, use: "YYYY-MM-DD HH:mm UTC +offset"
+    Example: "2025-12-28 07:52 UTC +8"
+    
+    The helper function parse_datetime_to_unix() converts this to Unix timestamp.
+
+    DATE FORMAT
+    ---------------
+    When specifying date values, use: "YYYY-MM-DD UTC +offset"
+    Example: "2025-12-28 UTC +8"
+    
+    The helper function parse_datetime_to_unix() converts this to Unix timestamp.
+    Use the function argument "2025-12-28 00:00 UTC +8"
 
     Prerequisites:
 
