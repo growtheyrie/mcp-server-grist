@@ -28,6 +28,45 @@ def register_record_tools(mcp_server):
     mcp_server.tool()(delete_grist_records)
 
 
+def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Convert datetime strings to GristObjCode format.
+    
+    Detects and converts:
+    - "YYYY-MM-DD HH:MM UTC +offset" → ["D", timestamp, "UTC"]
+    - "YYYY-MM-DD UTC +offset" → ["d", timestamp]
+    
+    Leaves other values unchanged.
+    """
+    import re
+    
+    # Patterns for detection
+    datetime_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC [+-]\d+$'
+    date_pattern = r'^\d{4}-\d{2}-\d{2} UTC [+-]\d+$'
+    
+    processed = []
+    for record in records:
+        new_record = {}
+        for key, value in record.items():
+            if isinstance(value, str):
+                if re.match(datetime_pattern, value):
+                    # DateTime with time component
+                    timestamp = parse_datetime_to_unix(value)
+                    new_record[key] = ["D", timestamp, "UTC"]
+                elif re.match(date_pattern, value):
+                    # Date without time component
+                    timestamp = parse_datetime_to_unix(value)
+                    new_record[key] = ["d", timestamp]
+                else:
+                    # Regular string, leave it alone
+                    new_record[key] = value
+            else:
+                # Not a string, leave it alone
+                new_record[key] = value
+        processed.append(new_record)
+    return processed
+
+
 async def add_grist_records(doc_id: str,
                             table_id: str,
                             records: List[Dict[str, Any]],
@@ -153,6 +192,9 @@ async def add_grist_records(doc_id: str,
                 "record_ids": []
             }
 
+		# Preprocess datetime strings
+		records = preprocess_datetime_values(records)
+		
         record_ids = await client.add_records(doc_id, table_id, records)
 
         return {
@@ -298,6 +340,9 @@ async def add_grist_records_safe(doc_id: str,
                     "record_ids": []
                 }
 
+		# Preprocess datetime strings
+		records = preprocess_datetime_values(records)
+		
         # Si tout est valide, ajouter les enregistrements
         record_ids = await client.add_records(doc_id, table_id, records)
 
