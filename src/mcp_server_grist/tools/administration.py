@@ -5,6 +5,7 @@ Ce module contient des outils MCP pour gérer les aspects administratifs
 de Grist: création et modification d'objets, gestion des accès.
 """
 
+import json
 import logging
 from typing import Any, Dict, List, Optional, Union
 
