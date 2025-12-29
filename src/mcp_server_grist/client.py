@@ -17,9 +17,6 @@ from dotenv import load_dotenv
 from .models import GristColumn, GristDocument, GristOrg, GristRecord, GristTable, GristWorkspace
 from .version import __version__
 
-import re
-from datetime import datetime, timezone, timedelta
-
 # Configurer le logger
 logger = logging.getLogger("grist_mcp_server")
 
@@ -28,54 +25,6 @@ def mask_api_key(api_key: str) -> str:
     if len(api_key) > 10:
         return f"{api_key[:5]}...{api_key[-5:]}"
     return "[SET]"
-
-# --- Helper Method for DateTime Conversion ---
-def parse_datetime_to_unix(datetime_str: str) -> int:
-    """
-    Convert datetime string to Unix timestamp.
-    
-    Supports two formats:
-    - DateTime: "2025-12-28 07:52 UTC +8"
-    - Date: "2025-12-28 UTC +8"
-    
-    Args:
-        datetime_str: DateTime with UTC offset
-        
-    Returns:
-        Unix timestamp (int)
-        
-    Raises:
-        ValueError: If format is invalid
-    """
-    datetime_str = datetime_str.strip()
-    
-    # Try DateTime format first: "YYYY-MM-DD HH:MM UTC +offset"
-    pattern_datetime = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC ([+-]\d+)'
-    match = re.match(pattern_datetime, datetime_str)
-    
-    if match:
-        date_part, time_part, offset_hours = match.groups()
-        dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
-    else:
-        # Try Date format: "YYYY-MM-DD UTC +offset"
-        pattern_date = r'(\d{4}-\d{2}-\d{2}) UTC ([+-]\d+)'
-        match = re.match(pattern_date, datetime_str)
-        
-        if not match:
-            raise ValueError(
-                f"Invalid datetime format. Expected: 'YYYY-MM-DD HH:MM UTC +8' or 'YYYY-MM-DD UTC +8', "
-                f"got: '{datetime_str}'"
-            )
-        
-        date_part, offset_hours = match.groups()
-        dt = datetime.strptime(f"{date_part} 00:00", "%Y-%m-%d %H:%M")
-    
-    # Create timezone with offset
-    offset = timedelta(hours=int(offset_hours))
-    tz = timezone(offset)
-    dt_aware = dt.replace(tzinfo=tz)
-    
-    return int(dt_aware.timestamp())
 
 class GristClient:
     """Client pour l'API Grist."""
