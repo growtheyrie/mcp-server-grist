@@ -675,13 +675,223 @@ async def create_table(
 
         table_id: ID of the new table (must be unique within the document)
 
-        columns: List of columns to create
+        NAMING CONVENTIONS:
+
+        Both table_id and column ids follow Grist's convention:
+        - Words_Separated_By_Underscores with each word capitalized
+        - Examples: "Customer_Orders", "Team_Members", "Sales_Data"
+        - Used in formulas as: $Table_Name.Column_Name or $Column_Name
+
+        Column labels use Title Case for human readability:
+        - "Customer Orders", "Team Members", "Sales Data"
+
+        columns: List of column definitions. Each column is a dictionary with:
+            - id (str): Column identifier following Grist naming convention
+                       (e.g., "First_Name", "Created_Date", "Is_Active")
+            - fields (dict): Column properties
+
+            Common field properties:
+            - type (str): Column type - see examples below
+            - label (str): Display name in Title Case (e.g., "First Name")
+            - description (str): Helpful explanation of the column's purpose
+
+            Column type examples with real structures:
+
+            TEXT:
+            {
+                "id": "Company_Name",
+                "fields": {
+                    "type": "Text",
+                    "label": "Company Name",
+                    "description": "Full legal name of the organization"
+                }
+            }
+
+            NUMERIC:
+            {
+                "id": "Employee_Count",
+                "fields": {
+                    "type": "Numeric",
+                    "label": "Employee Count",
+                    "description": "Total number of employees, updated quarterly"
+                }
+            }
+
+            BOOLEAN:
+            {
+                "id": "Is_Active",
+                "fields": {
+                    "type": "Bool",
+                    "label": "Is Active",
+                    "description": "Whether this record is currently active in the system"
+                }
+            }
+
+            DATE:
+            {
+                "id": "Start_Date",
+                "fields": {
+                    "type": "Date",
+                    "label": "Start Date",
+                    "description": "Date when the contract or engagement began",
+                    "widgetOptions": {
+                        "dateFormat": "YYYY-MM-DD"
+                    }
+                }
+            }
+
+            DATETIME:
+            {
+                "id": "Last_Modified",
+                "fields": {
+                    "type": "DateTime",
+                    "label": "Last Modified",
+                    "description": "Timestamp of the most recent update to this record",
+                    "widgetOptions": {
+                        "dateFormat": "YYYY-MM-DD",
+                        "timeFormat": "HH:mm"
+                    }
+                }
+            }
+
+            CHOICE (single selection):
+            {
+                "id": "Priority_Level",
+                "fields": {
+                    "type": "Choice",
+                    "label": "Priority Level",
+                    "description": "Urgency level for task processing",
+                    "widgetOptions": {
+                        "choices": ["High", "Medium", "Low"]
+                    }
+                }
+            }
+
+            CHOICE LIST (multiple selections):
+            {
+                "id": "Project_Tags",
+                "fields": {
+                    "type": "ChoiceList",
+                    "label": "Project Tags",
+                    "description": "Category tags for filtering and organization (select multiple)",
+                    "widgetOptions": {
+                        "choices": ["Urgent", "Planning", "Review", "On Hold"]
+                    }
+                }
+            }
+
+            REFERENCE (link to another table):
+            {
+                "id": "Assigned_To",
+                "fields": {
+                    "type": "Ref:People",
+                    "label": "Assigned To",
+                    "description": "Team member responsible (links to People table)",
+                    "widgetOptions": {
+                        "widget": "Reference"
+                    }
+                }
+            }
+            Note: Format is "Ref:Target_Table_ID" where Target_Table_ID is the 
+            table you're linking to (e.g., "Ref:People", "Ref:Companies")
+
+            REFERENCE LIST (multiple links):
+            {
+                "id": "Team_Members",
+                "fields": {
+                    "type": "RefList:People",
+                    "label": "Team Members",
+                    "description": "All people working on this project (links to People table)",
+                    "widgetOptions": {
+                        "widget": "Reference"
+                    }
+                }
+            }
+            Note: Format is "RefList:Target_Table_ID" for linking to multiple records
+
+            FORMULA (calculated column):
+            {
+                "id": "Full_Name",
+                "fields": {
+                    "type": "Text",
+                    "label": "Full Name",
+                    "description": "Automatically combines first and last name with a space",
+                    "formula": "$First_Name + ' ' + $Last_Name",
+                    "isFormula": true
+                }
+            }
+            Note: Use $Column_ID format to reference other columns in formulas
+
+            ATTACHMENTS:
+            {
+                "id": "Supporting_Documents",
+                "fields": {
+                    "type": "Attachments",
+                    "label": "Supporting Documents",
+                    "description": "Files, images, or documents related to this record"
+                }
+            }
+
+            Complete example - Project tracking table:
+            [
+                {
+                    "id": "Project_Name",
+                    "fields": {
+                        "type": "Text",
+                        "label": "Project Name",
+                        "description": "Official project title"
+                    }
+                },
+                {
+                    "id": "Budget",
+                    "fields": {
+                        "type": "Numeric",
+                        "label": "Budget",
+                        "description": "Allocated budget in USD"
+                    }
+                },
+                {
+                    "id": "Status",
+                    "fields": {
+                        "type": "Choice",
+                        "label": "Status",
+                        "description": "Current project status",
+                        "widgetOptions": {
+                            "choices": ["Planning", "Active", "On Hold", "Completed"]
+                        }
+                    }
+                },
+                {
+                    "id": "Project_Lead",
+                    "fields": {
+                        "type": "Ref:People",
+                        "label": "Project Lead",
+                        "description": "Person responsible for project delivery"
+                    }
+                },
+                {
+                    "id": "Start_Date",
+                    "fields": {
+                        "type": "Date",
+                        "label": "Start Date",
+                        "description": "Project kickoff date"
+                    }
+                }
+            ]
 
 
 
     Returns:
 
     Dict with status, message, and details of the created table
+
+    Note:
+
+        Column descriptions are especially helpful for:
+        - Onboarding new team members who need to understand the data structure
+        - Documenting business logic and data conventions
+        - AI assistants generating or interpreting data
+        - Future reference when tables become complex
     """
     logger.info(f"Tool called: create_table with doc_id: {doc_id}, table_id: {table_id}")
     
