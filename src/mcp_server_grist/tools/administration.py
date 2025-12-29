@@ -116,11 +116,25 @@ async def delete_organization(
     """
     Deletes an organization.
 
+    This operation automatically retrieves the organization name before deletion.
+
     Attention:
 
     This action is irreversible and will delete all workspaces.
 
     documents and data associated with this organization.
+
+    Prerequisites:
+
+        - list_organizations: To obtain a valid org_id
+
+    Typical workflow:
+
+        1. list_organizations() → identify the organization
+
+        2. describe_organization(org_id) → review details before deletion
+
+        3. delete_organization(org_id) → delete (irreversible)
 
     Args:
 
