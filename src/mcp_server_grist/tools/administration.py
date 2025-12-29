@@ -14,7 +14,7 @@ from ..client import get_client
 logger = logging.getLogger("grist_mcp_server")
 
 
-# --- Helper Methods for JSON String Encoding ---
+# --- Helper Method for JSON String Encoding ---
 def encode_widget_options(columns: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Encode widgetOptions from dict to JSON string for Grist API.
