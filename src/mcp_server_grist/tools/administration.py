@@ -14,6 +14,27 @@ from ..client import get_client
 logger = logging.getLogger("grist_mcp_server")
 
 
+# --- Helper Methods for JSON String Encoding ---
+def encode_widget_options(columns: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Encode widgetOptions from dict to JSON string for Grist API.
+    
+    Args:
+        columns: List of column definitions
+        
+    Returns:
+        List of column definitions with widgetOptions encoded as JSON strings
+    """
+    processed_columns = []
+    for column in columns:
+        processed_col = column.copy()
+        if "fields" in processed_col and "widgetOptions" in processed_col["fields"]:
+            widget_opts = processed_col["fields"]["widgetOptions"]
+            if isinstance(widget_opts, dict):
+                processed_col["fields"]["widgetOptions"] = json.dumps(widget_opts)
+        processed_columns.append(processed_col)
+    return processed_columns
+
 def register_admin_tools(mcp_server):
     """
     Enregistre tous les outils d'administration sur le serveur MCP.
@@ -894,7 +915,7 @@ async def create_table(
         - Future reference when tables become complex
     """
     logger.info(f"Tool called: create_table with doc_id: {doc_id}, table_id: {table_id}")
-    
+
     try:
         client = get_client(ctx)
         if not client:
@@ -902,18 +923,21 @@ async def create_table(
                 "success": False,
                 "message": "Client Grist non configuré"
             }
-        
+
+        # Encode widgetOptions for Grist API
+        processed_columns = encode_widget_options(columns)
+
         table_data = {
             "tables": [
                 {
                     "id": table_id,
-                    "columns": columns
+                    "columns": processed_columns
                 }
             ]
         }
-        
+
         result = await client.create_tables(doc_id, table_data)
-        
+
         return {
             "success": True,
             "message": f"Table '{table_id}' créée avec succès",
@@ -1043,7 +1067,7 @@ async def create_column(
     Dict with status, message, and details of the created column
     """
     logger.info(f"Tool called: create_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
-    
+
     try:
         client = get_client(ctx)
         if not client:
@@ -1051,7 +1075,7 @@ async def create_column(
                 "success": False,
                 "message": "Client Grist non configuré"
             }
-        
+
         column_data = {
             "columns": [
                 {
@@ -1062,7 +1086,7 @@ async def create_column(
                 }
             ]
         }
-        
+
         # Ajouter les champs optionnels s'ils sont fournis
         if label:
             column_data["columns"][0]["fields"]["label"] = label
@@ -1070,10 +1094,10 @@ async def create_column(
             column_data["columns"][0]["fields"]["formula"] = formula
             column_data["columns"][0]["fields"]["isFormula"] = True
         if widget_options:
-            column_data["columns"][0]["fields"]["widgetOptions"] = widget_options
-        
+            column_data["columns"][0]["fields"]["widgetOptions"] = json.dumps(widget_options)
+
         result = await client.create_columns(doc_id, table_id, column_data)
-        
+
         return {
             "success": True,
             "message": f"Colonne '{column_id}' créée avec succès",
@@ -1130,7 +1154,7 @@ async def modify_column(
     Dict with status and message of the operation
     """
     logger.info(f"Tool called: modify_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
-    
+
     try:
         client = get_client(ctx)
         if not client:
@@ -1138,7 +1162,7 @@ async def modify_column(
                 "success": False,
                 "message": "Client Grist non configuré"
             }
-        
+
         column_data = {
             "columns": [
                 {
@@ -1147,7 +1171,7 @@ async def modify_column(
                 }
             ]
         }
-        
+
         # Ajouter les champs à modifier s'ils sont fournis
         if new_column_id:
             column_data["columns"][0]["newId"] = new_column_id
@@ -1159,14 +1183,14 @@ async def modify_column(
             column_data["columns"][0]["fields"]["formula"] = formula
             column_data["columns"][0]["fields"]["isFormula"] = bool(formula)
         if widget_options:
-            column_data["columns"][0]["fields"]["widgetOptions"] = widget_options
-        
+            column_data["columns"][0]["fields"]["widgetOptions"] = json.dumps(widget_options)
+
         await client.modify_columns(doc_id, table_id, column_data)
-        
+
         message = f"Colonne '{column_id}' modifiée avec succès"
         if new_column_id:
             message += f" (renamemée en '{new_column_id}')"
-        
+
         return {
             "success": True,
             "message": message
