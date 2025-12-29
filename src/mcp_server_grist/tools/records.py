@@ -89,7 +89,6 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
 
     Leaves other values unchanged.
     """
-    import re
 
     # Patterns for detection
     datetime_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC [+-]\d+$'
