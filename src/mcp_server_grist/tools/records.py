@@ -30,6 +30,7 @@ def register_record_tools(mcp_server):
     mcp_server.tool()(delete_grist_records)
 
 
+# --- Helper Method for DateTime Conversion ---
 def parse_datetime_to_unix(datetime_str: str) -> int:
     """
     Convert datetime string to Unix timestamp.
