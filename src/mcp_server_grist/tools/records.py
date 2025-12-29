@@ -5,6 +5,7 @@ Ce module contient des outils MCP pour manipuler les enregistrements
 dans les tables Grist: ajout, update et deletion.
 """
 
+import json
 import logging
 import re
 from datetime import datetime, timezone, timedelta
