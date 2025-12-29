@@ -171,22 +171,29 @@ class GristClient:
     async def delete_org(self, org_id: Union[int, str]) -> None:
         """Supprime une organisation."""
         logger.debug(f"Deleting organization {org_id}")
-        await self._request("DELETE", f"/orgs/{org_id}")
-    
+
+        org_details = await self.describe_org(org_id)
+        org_name = org_details.get("name")
+        # Check if the organization name can be fetched
+        if not org_name:
+            raise ValueError(f"Could not retrieve name for organization {org_id}")
+
+        await self._request("DELETE", f"/orgs/{org_id}/{org_name}")
+
     # --- Workspace Methods ---
     
     async def list_workspaces(self, org_id: Union[int, str]) -> List[GristWorkspace]:
         """Liste tous les espaces de travail d'une organisation."""
         logger.debug(f"Listing workspaces for org {org_id}")
         data = await self._request("GET", f"/orgs/{org_id}/workspaces")
-        
+
         # Check if the response is in the expected format
         if not isinstance(data, list):
             logger.warning(f"Unexpected response format for workspaces: {data}")
             return []
             
         return [GristWorkspace(**workspace) for workspace in data]
-    
+
     async def describe_workspace(self, workspace_id: int) -> Dict[str, Any]:
         """Obtient les détails d'un espace de travail spécifique."""
         logger.debug(f"Describing workspace {workspace_id}")
