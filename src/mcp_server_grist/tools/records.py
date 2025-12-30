@@ -123,7 +123,7 @@ async def add_grist_records(doc_id: str,
                             ctx=None) -> Dict[str, Any]:
     """
     Adds records to a Grist table.
-	
+
     DATETIME/DATE VALUES (Automatic Conversion)
     ============================================
 
