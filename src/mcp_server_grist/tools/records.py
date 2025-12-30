@@ -123,10 +123,10 @@ async def add_grist_records(doc_id: str,
                             ctx=None) -> Dict[str, Any]:
     """
     Adds records to a Grist table.
-
+    
     DATETIME/DATE VALUES (Automatic Conversion)
     ============================================
-
+    
     Use simple string formats - automatic conversion to GristObjCode:
 
     DateTime (with time):  "2025-12-28 14:30 UTC +8"  → ["D", timestamp, "UTC"]
