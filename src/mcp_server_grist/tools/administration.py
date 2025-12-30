@@ -1120,6 +1120,7 @@ async def modify_column(
     column_type: Optional[str] = None,
     label: Optional[str] = None,
     formula: Optional[str] = None,
+    description: Optional[str] = None,
     widget_options: Optional[Dict[str, Any]] = None,
     ctx=None
 ) -> Dict[str, Any]:
@@ -1145,6 +1146,8 @@ async def modify_column(
         label: New display label (optional)
 
         formula: New formula (optional)
+
+        description: Column description
 
         widget_options: New display options (optional)
 
@@ -1183,6 +1186,8 @@ async def modify_column(
         if formula is not None:  # Permettre de vider la formule avec une chaîne vide
             column_data["columns"][0]["fields"]["formula"] = formula
             column_data["columns"][0]["fields"]["isFormula"] = bool(formula)
+        if description is not None:
+            column_data["columns"][0]["fields"]["description"] = description
         if widget_options:
             column_data["columns"][0]["fields"]["widgetOptions"] = json.dumps(widget_options)
 
