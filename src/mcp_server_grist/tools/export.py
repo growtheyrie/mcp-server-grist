@@ -167,7 +167,7 @@ async def download_table_csv(
 
         table_id: The table ID
 
-        header: Header format (label, id, or none)
+        header: Header format (colId or label, default: label)
 
 
 
