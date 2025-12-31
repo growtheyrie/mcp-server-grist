@@ -672,7 +672,7 @@ async def delete_document_history(
 
 async def create_table(
     doc_id: str, 
-    table_id: str,
+    table_name: str,
     columns: List[Dict[str, Any]],
     ctx=None
 ) -> Dict[str, Any]:
@@ -695,24 +695,27 @@ async def create_table(
 
         doc_id: The ID of the document
 
-        table_id: ID of the new table (must be unique within the document)
+        table_name: Human-readable name for the new table:
+            - Must be unique within the document
+            - Examples: "Project Tracker", "Activity Notes"
+            - Grist automatically converts this to a table ID following its naming convention
 
-        NAMING CONVENTIONS:
+        NAMING CONVENTION (applies to both tables and columns):
 
-        Both table_id and column ids follow Grist's convention:
-        - Words_Separated_By_Underscores with each word capitalized
-        - Examples: "Customer_Orders", "Team_Members", "Sales_Data"
-        - Used in formulas as: $Table_Name.Column_Name or $Column_Name
-
-        Column labels use Title Case for human readability:
-        - "Customer Orders", "Team Members", "Sales Data"
+        Names/Labels (human readable):
+            - Use Title Case with spaces: "Project Tracker", "First Name", "Start Date"
+            - What you type when creating: table_name parameter, column "label" field
+        
+        IDs (system identifiers):
+            - Auto-generated as Words_Separated_By_Underscores: "Project_Tracker", "First_Name", "Start_Date"
+            - Used in formulas as: $Column_ID
+            - What you reference after creation: table_id in other tools, column "id" field
 
         columns: List of column definitions. Each column is a dictionary with:
-            - id (str): Column identifier following Grist naming convention
-                       (e.g., "First_Name", "Created_Date", "Is_Active")
+            - id (str): Column ID in Grist naming convention (e.g., "First_Name", "Is_Active")
             - fields (dict): Column properties
 
-            Common field properties:
+        Common field properties:
             - type (str): Column type - see examples below
             - label (str): Display name in Title Case (e.g., "First Name")
             - description (str): Helpful explanation of the column's purpose
@@ -931,7 +934,7 @@ async def create_table(
         table_data = {
             "tables": [
                 {
-                    "id": table_id,
+                    "id": table_name,
                     "columns": processed_columns
                 }
             ]
@@ -1116,7 +1119,6 @@ async def modify_column(
     doc_id: str, 
     table_id: str,
     column_id: str,
-    new_column_id: Optional[str] = None,
     column_type: Optional[str] = None,
     label: Optional[str] = None,
     formula: Optional[str] = None,
@@ -1177,8 +1179,6 @@ async def modify_column(
         }
 
         # Ajouter les champs à modifier s'ils sont fournis
-        if new_column_id:
-            column_data["columns"][0]["newId"] = new_column_id
         if column_type:
             column_data["columns"][0]["fields"]["type"] = column_type
         if label:
@@ -1194,8 +1194,6 @@ async def modify_column(
         await client.modify_columns(doc_id, table_id, column_data)
 
         message = f"Colonne '{column_id}' modifiée avec succès"
-        if new_column_id:
-            message += f" (renamemée en '{new_column_id}')"
 
         return {
             "success": True,
