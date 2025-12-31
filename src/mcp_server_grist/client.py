@@ -445,7 +445,7 @@ class GristClient:
             logger.error(f"Excel download unexpected error for doc {doc_id}: {e}")
             raise ValueError(f"Excel download failed: {str(e)}")
     
-    async def download_doc_csv(self, doc_id: str, table_id: str, header: str = "label") -> str:
+    async def download_table_csv(self, doc_id: str, table_id: str, header: str = "label") -> str:
         """Télécharge une table au format CSV."""
         params = {"tableId": table_id, "header": header}
         
