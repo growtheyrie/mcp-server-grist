@@ -185,10 +185,10 @@ async def download_table_csv(
                 "message": "Client Grist non configuré"
             }
         
-        if header not in ["label", "id", "none"]:
+        if header not in ["colId", "label"]:
             return {
                 "success": False,
-                "message": "Format d'en-tête invalide. Doit être: label, id, ou none"
+                "message": "Format d'en-tête invalide. Doit être: colId ou label"
             }
         
         content = await client.download_table_csv(doc_id, table_id, header=header)
