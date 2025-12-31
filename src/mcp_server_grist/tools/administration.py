@@ -1141,8 +1141,6 @@ async def modify_column(
 
         column_id: The current ID of the column
 
-        new_column_id: New ID for the column (optional)
-
         column_type: New data type (optional)
 
         label: New display label (optional)
