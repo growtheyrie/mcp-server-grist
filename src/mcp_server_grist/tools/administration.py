@@ -62,7 +62,6 @@ def register_admin_tools(mcp_server):
     
     # Table
     mcp_server.tool()(create_table)
-    mcp_server.tool()(modify_table)
     
     # Column
     mcp_server.tool()(create_column)
@@ -952,72 +951,6 @@ async def create_table(
         return {
             "success": False,
             "message": f"Erreur lors de la création de la table: {str(e)}"
-        }
-
-
-async def modify_table(
-    doc_id: str, 
-    table_id: str,
-    new_table_id: Optional[str] = None,
-    ctx=None
-) -> Dict[str, Any]:
-    """
-    Modifies the properties of a table.
-
-    Prerequisites:
-
-        - list_tables: To obtain a valid table_id
-
-    Args:
-
-        doc_id: The ID of the document
-
-        table_id: The current ID of the table
-
-        new_table_id: New ID for the table (optional)
-
-
-
-    Returns:
-
-    Dict with status and message of the operation
-    """
-    logger.info(f"Tool called: modify_table with doc_id: {doc_id}, table_id: {table_id}")
-    
-    try:
-        client = get_client(ctx)
-        if not client:
-            return {
-                "success": False,
-                "message": "Client Grist non configuré"
-            }
-        
-        table_data = {
-            "tables": [
-                {
-                    "tableId": table_id
-                }
-            ]
-        }
-        
-        if new_table_id:
-            table_data["tables"][0]["newTableId"] = new_table_id
-        
-        await client.modify_tables(doc_id, table_data)
-        
-        message = f"Table {table_id} modifiée avec succès"
-        if new_table_id:
-            message += f" (renamemée en '{new_table_id}')"
-        
-        return {
-            "success": True,
-            "message": message
-        }
-    except Exception as e:
-        logger.error(f"Error modifying table: {e}")
-        return {
-            "success": False,
-            "message": f"Erreur lors de la modification de la table: {str(e)}"
         }
 
 
