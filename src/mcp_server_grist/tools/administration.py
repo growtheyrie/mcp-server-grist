@@ -677,7 +677,15 @@ async def create_table(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Creates a new table in a document.
+    Creates a new table with basic column structure.
+
+    IMPORTANT WORKFLOW:
+    This tool creates only the table skeleton (column IDs and labels).
+    Use modify_column immediately after to add descriptions, types, and other properties.
+
+    Why this two-step approach?
+    The API endpoint for creating tables doesn't support column descriptions or 
+    advanced properties. These must be added via modify_column.
 
     Prerequisites:
 
@@ -687,222 +695,41 @@ async def create_table(
 
         1. list_documents(workspace_id) → get doc_id
 
-        2. create_table(doc_id, "TableName") → create the table
+        2. create_table(doc_id, "Projects", columns) → create skeleton
 
-        3. list_tables(doc_id) → verify creation
+        3. modify_column(doc_id, table_id, column_id, ...) → add details for each column
+
+        4. list_columns(doc_id, table_id) → verify complete structure
 
     Args:
 
         doc_id: The ID of the document
 
-        table_name: Human-readable name for the new table:
-            - Must be unique within the document
-            - Examples: "Project Tracker", "Activity Notes"
-            - Grist automatically converts this to a table ID following its naming convention
+        table_name: Human-readable name (e.g., "Project Tracker", "Team Members")
+                    Grist auto-converts to table_id: "Project_Tracker", "Team_Members"
 
-        NAMING CONVENTION (applies to both tables and columns):
-
-        Names/Labels (human readable):
-            - Use Title Case with spaces: "Project Tracker", "First Name", "Start Date"
-            - What you type when creating: table_name parameter, column "label" field
-        
-        IDs (system identifiers):
-            - Auto-generated as Words_Separated_By_Underscores: "Project_Tracker", "First_Name", "Start_Date"
-            - Used in formulas as: $Column_ID
-            - What you reference after creation: table_id in other tools, column "id" field
-
-        columns: List of column definitions. Each column is a dictionary with:
-            - id (str): Column ID in Grist naming convention (e.g., "First_Name", "Is_Active")
-            - fields (dict): Column properties
-
-        Common field properties:
-            - type (str): Column type - see examples below
-            - label (str): Display name in Title Case (e.g., "First Name")
-            - description (str): Helpful explanation of the column's purpose
-
-            Column type examples with real structures:
-
-            TEXT:
-            {
-                "id": "Company_Name",
-                "fields": {
-                    "type": "Text",
-                    "label": "Company Name",
-                    "description": "Full legal name of the organization"
-                }
-            }
-
-            NUMERIC:
-            {
-                "id": "Employee_Count",
-                "fields": {
-                    "type": "Numeric",
-                    "label": "Employee Count",
-                    "description": "Total number of employees, updated quarterly"
-                }
-            }
-
-            BOOLEAN:
-            {
-                "id": "Is_Active",
-                "fields": {
-                    "type": "Bool",
-                    "label": "Is Active",
-                    "description": "Whether this record is currently active in the system"
-                }
-            }
-
-            DATE:
-            {
-                "id": "Start_Date",
-                "fields": {
-                    "type": "Date",
-                    "label": "Start Date",
-                    "description": "Date when the contract or engagement began",
-                    "widgetOptions": {
-                        "dateFormat": "YYYY-MM-DD"
-                    }
-                }
-            }
-
-            DATETIME:
-            {
-                "id": "Last_Modified",
-                "fields": {
-                    "type": "DateTime",
-                    "label": "Last Modified",
-                    "description": "Timestamp of the most recent update to this record",
-                    "widgetOptions": {
-                        "dateFormat": "YYYY-MM-DD",
-                        "timeFormat": "HH:mm"
-                    }
-                }
-            }
-
-            CHOICE (single selection):
-            {
-                "id": "Priority_Level",
-                "fields": {
-                    "type": "Choice",
-                    "label": "Priority Level",
-                    "description": "Urgency level for task processing",
-                    "widgetOptions": {
-                        "choices": ["High", "Medium", "Low"]
-                    }
-                }
-            }
-
-            CHOICE LIST (multiple selections):
-            {
-                "id": "Project_Tags",
-                "fields": {
-                    "type": "ChoiceList",
-                    "label": "Project Tags",
-                    "description": "Category tags for filtering and organization (select multiple)",
-                    "widgetOptions": {
-                        "choices": ["Urgent", "Planning", "Review", "On Hold"]
-                    }
-                }
-            }
-
-            REFERENCE (link to another table):
-            {
-                "id": "Assigned_To",
-                "fields": {
-                    "type": "Ref:People",
-                    "label": "Assigned To",
-                    "description": "Team member responsible (links to People table)",
-                    "widgetOptions": {
-                        "widget": "Reference"
-                    }
-                }
-            }
-            Note: Format is "Ref:Target_Table_ID" where Target_Table_ID is the 
-            table you're linking to (e.g., "Ref:People", "Ref:Companies")
-
-            REFERENCE LIST (multiple links):
-            {
-                "id": "Team_Members",
-                "fields": {
-                    "type": "RefList:People",
-                    "label": "Team Members",
-                    "description": "All people working on this project (links to People table)",
-                    "widgetOptions": {
-                        "widget": "Reference"
-                    }
-                }
-            }
-            Note: Format is "RefList:Target_Table_ID" for linking to multiple records
-
-            FORMULA (calculated column):
-            {
-                "id": "Full_Name",
-                "fields": {
-                    "type": "Text",
-                    "label": "Full Name",
-                    "description": "Automatically combines first and last name with a space",
-                    "formula": "$First_Name + ' ' + $Last_Name",
-                    "isFormula": true
-                }
-            }
-            Note: Use $Column_ID format to reference other columns in formulas
-
-            ATTACHMENTS:
-            {
-                "id": "Supporting_Documents",
-                "fields": {
-                    "type": "Attachments",
-                    "label": "Supporting Documents",
-                    "description": "Files, images, or documents related to this record"
-                }
-            }
-
-            Complete example - Project tracking table:
+        columns: Minimal column definitions - just id and label:
             [
                 {
-                    "id": "Project_Name",
+                    "id": "Project_Name",        # Words_Separated_By_Underscores
                     "fields": {
-                        "type": "Text",
-                        "label": "Project Name",
-                        "description": "Official project title"
+                        "label": "Project Name"  # Title Case With Spaces
                     }
                 },
                 {
-                    "id": "Budget",
+                    "id": "Priority_Level",
                     "fields": {
-                        "type": "Numeric",
-                        "label": "Budget",
-                        "description": "Allocated budget in USD"
-                    }
-                },
-                {
-                    "id": "Status",
-                    "fields": {
-                        "type": "Choice",
-                        "label": "Status",
-                        "description": "Current project status",
-                        "widgetOptions": {
-                            "choices": ["Planning", "Active", "On Hold", "Completed"]
-                        }
-                    }
-                },
-                {
-                    "id": "Project_Lead",
-                    "fields": {
-                        "type": "Ref:People",
-                        "label": "Project Lead",
-                        "description": "Person responsible for project delivery"
-                    }
-                },
-                {
-                    "id": "Start_Date",
-                    "fields": {
-                        "type": "Date",
-                        "label": "Start Date",
-                        "description": "Project kickoff date"
+                        "label": "Priority Level"
                     }
                 }
             ]
+
+    NAMING CONVENTION:
+        Human-readable (Names/Labels):  "Project Name", "Priority Level"
+        System IDs:                     "Project_Name", "Priority_Level"
+
+        Tables: table_name → table_id (auto-converted by Grist)
+        Columns: Specify both id and label explicitly in the columns parameter
 
 
 
@@ -910,13 +737,9 @@ async def create_table(
 
     Dict with status, message, and details of the created table
 
-    Note:
+    Next steps:
 
-        Column descriptions are especially helpful for:
-        - Onboarding new team members who need to understand the data structure
-        - Documenting business logic and data conventions
-        - AI assistants generating or interpreting data
-        - Future reference when tables become complex
+    Use modify_column to add type, description, widgetOptions, formulas
     """
     logger.info(f"Tool called: create_table with doc_id: {doc_id}, table_id: {table_id}")
 
@@ -928,14 +751,11 @@ async def create_table(
                 "message": "Client Grist non configuré"
             }
 
-        # Encode widgetOptions for Grist API
-        processed_columns = encode_widget_options(columns)
-
         table_data = {
             "tables": [
                 {
                     "id": table_name,
-                    "columns": processed_columns
+                    "columns": columns
                 }
             ]
         }
@@ -961,14 +781,19 @@ async def create_column(
     doc_id: str, 
     table_id: str,
     column_id: str,
-    column_type: str = "Text",
-    label: Optional[str] = None,
-    formula: Optional[str] = None,
-    widget_options: Optional[Dict[str, Any]] = None,
+    label: str,
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Creates a new column in a table.
+    Creates a new column with basic structure.
+
+    IMPORTANT WORKFLOW:
+    This tool creates only the column skeleton (ID and label).
+    Use modify_column immediately after to add type, description, and other properties.
+
+    Why this two-step approach?
+    Maintains consistency with create_table workflow and ensures all column 
+    properties (especially descriptions) are added via modify_column.
 
     Prerequisites:
 
@@ -978,31 +803,40 @@ async def create_column(
 
         1. list_tables(doc_id) → get table_id
 
-        2. create_column(doc_id, table_id, "col_name", "Text", "Name") → create the column
+        2. create_column(doc_id, table_id, "Status", "Status") → create skeleton
 
-        3. list_columns(doc_id, table_id) → verify creation
+        3. modify_column(doc_id, table_id, "Status",
+                         column_type="Choice",
+                         description="Current project status",
+                         widget_options={"choices": ["Active", "Completed"]}) → add details
+
+        4. list_columns(doc_id, table_id) → verify
 
     Args:
 
         doc_id: The ID of the document
 
-        table_id: The table ID
+        table_id: The table ID (e.g., "Projects", "Team_Members")
 
-        column_id: ID of the new column (must be unique within the table)
+        column_id: Column identifier following Grist convention
+                   (e.g., "Priority_Level", "Start_Date", "Is_Active")
 
-        column_type: Data type (Text, Numeric, Boolean, Date, etc.)
+        label: Column display label
+               Use Title Case: "Priority Level", "Start Date", "Is Active"
 
-        label: Column display label (optional)
-
-        formula: Formula for calculated columns (optional)
-
-        widget_options: Display options (optional)
+    NAMING CONVENTION:
+    column_id: Words_Separated_By_Underscores (e.g., "Project_Name")
+    label: Title Case With Spaces (e.g., "Project Name")
 
 
 
     Returns:
 
     Dict with status, message, and details of the created column
+
+    Next steps:
+
+    Use modify_column to add type, description, widgetOptions, formulas
     """
     logger.info(f"Tool called: create_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
 
@@ -1019,20 +853,11 @@ async def create_column(
                 {
                     "id": column_id,
                     "fields":{
-                        "type": column_type
+                        "label": label
                     }
                 }
             ]
         }
-
-        # Ajouter les champs optionnels s'ils sont fournis
-        if label:
-            column_data["columns"][0]["fields"]["label"] = label
-        if formula:
-            column_data["columns"][0]["fields"]["formula"] = formula
-            column_data["columns"][0]["fields"]["isFormula"] = True
-        if widget_options:
-            column_data["columns"][0]["fields"]["widgetOptions"] = json.dumps(widget_options)
 
         result = await client.create_columns(doc_id, table_id, column_data)
 
@@ -1061,35 +886,115 @@ async def modify_column(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifies the properties of a column.
+    Modifies column properties - the primary tool for adding rich column metadata.
+
+    TYPICAL USE CASE:
+    After creating a table with create_table, use this tool to add:
+        - Column type (Text, Numeric, Date, Choice, Reference, etc.)
+        - Description (crucial for AI understanding)
+        - Widget options (choices, date formats, reference tables)
+        - Formulas for calculated columns
 
     Prerequisites:
 
-        - list_columns: To obtain a valid column_id
+        - list_columns: To obtain valid column_id and see current properties
+
+        - create_table: Usually run first to create the table skeleton
+
+        - create_column: Usually run first to create the column skeleton
+
+    Typical workflow:
+
+        1. create_table(doc_id, "Projects", [...]) → create skeleton
+
+        2. modify_column(doc_id, "Projects", "Priority_Level",
+                         column_type="Choice",
+                         description="Urgency level for task processing",
+                         widget_options={"choices": ["High", "Medium", "Low"]}) → add details
+
+        3. list_columns(doc_id, "Projects") → verify changes
 
     Args:
 
         doc_id: The ID of the document
 
-        table_id: The table ID
+        table_id: The table ID (e.g., "Projects", "Team_Members")
 
-        column_id: The current ID of the column
+        column_id: Current column ID (e.g., "Priority_Level", "Start_Date")
 
-        column_type: New data type (optional)
+        column_type: Data type (optional) - see examples below
 
-        label: New display label (optional)
+        label: Display label (optional)
 
-        formula: New formula (optional)
+        description: Explanation of column's purpose (optional but recommended)
 
-        description: Column description
+        formula: Formula for calculated columns (optional)
 
-        widget_options: New display options (optional)
+        widget_options: Display/behavior options as dict (optional)
+
+    COLUMN TYPES WITH EXAMPLES:
+
+    TEXT:
+        column_type="Text"
+        description="Full legal name of the organization"
+
+    NUMERIC:
+        column_type="Numeric"
+        description="Total number of employees, updated quarterly"
+
+    BOOLEAN:
+        column_type="Bool"
+        description="Whether this record is currently active"
+
+    DATE:
+        column_type="Date"
+        description="Date when the contract began"
+        widget_options={"dateFormat": "YYYY-MM-DD"}
+
+    DATETIME:
+        column_type="DateTime"
+        description="Timestamp of the most recent update"
+        widget_options={"dateFormat": "YYYY-MM-DD", "timeFormat": "HH:mm"}
+
+    CHOICE (single):
+        column_type="Choice"
+        description="Urgency level for task processing"
+        widget_options={"choices": ["High", "Medium", "Low"]}
+
+    CHOICE LIST (multiple):
+        column_type="ChoiceList"
+        description="Category tags for filtering (select multiple)"
+        widget_options={"choices": ["Urgent", "Planning", "Review"]}
+
+    REFERENCE (link to another table):
+        column_type="Ref:People"
+        description="Team member responsible (links to People table)"
+        Note: Format is "Ref:Target_Table_ID"
+
+    REFERENCE LIST (multiple links):
+        column_type="RefList:People"
+        description="All people working on this project (links to People table)"
+        Note: Format is "RefList:Target_Table_ID"
+
+    FORMULA (calculated):
+        column_type="Text"
+        description="Automatically combines first and last name"
+        formula="$First_Name + ' ' + $Last_Name"
+        Note: Use $Column_ID format to reference other columns
+
+    ATTACHMENTS:
+        column_type="Attachments"
+        description="Files, images, or documents related to this record"
 
 
 
     Returns:
 
     Dict with status and message of the operation
+
+    Note:
+    Column descriptions are crucial for AI assistants to understand and 
+    properly use the data in your tables. Always add them when possible.
     """
     logger.info(f"Tool called: modify_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
 
