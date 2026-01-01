@@ -62,6 +62,7 @@ def register_admin_tools(mcp_server):
     
     # Table
     mcp_server.tool()(create_table)
+    # Note: modify_table removed because Grist API doesn't support table renaming
     
     # Column
     mcp_server.tool()(create_column)
