@@ -218,11 +218,6 @@ class GristClient:
         logger.debug(f"Creating tables in document {doc_id}")
         result = await self._request("POST", f"/docs/{doc_id}/tables", json_data=tables_data)
         return result.get("tables", [])
-    
-    async def modify_tables(self, doc_id: str, tables_data: Dict[str, Any]) -> None:
-        """Modifie des tables dans un document."""
-        logger.debug(f"Modifying tables in document {doc_id}")
-        await self._request("PATCH", f"/docs/{doc_id}/tables", json_data=tables_data)
 
     # --- Column Methods ---
     
