@@ -821,8 +821,8 @@ async def create_column(
         column_id: Column identifier following Grist convention
                    (e.g., "Priority_Level", "Start_Date", "Is_Active")
 
-        label: Column display label
-               Use Title Case: "Priority Level", "Start Date", "Is Active"
+        label: Column display label in Title Case
+               (e.g., "Priority Level", "Start Date", "Is Active")
 
     NAMING CONVENTION:
     column_id: Words_Separated_By_Underscores (e.g., "Project_Name")
