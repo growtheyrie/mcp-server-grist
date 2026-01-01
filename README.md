@@ -250,7 +250,6 @@ Pour les transports HTTP et SSE, nous recommandons :
 ### Gestion des tables et colonnes
 - `list_tables` : Liste les tables dans un document
 - `create_table` : Crée une nouvelle table
-- `modify_table` : Modifie une table
 - `list_columns` : Liste les colonnes dans une table
 - `create_column` : Crée une nouvelle colonne
 - `create_column_with_feedback` : Crée une colonne avec validation et retour détaillé
