@@ -6,15 +6,20 @@ dans les tables Grist: ajout, update et deletion.
 """
 
 import logging
+import os
 import re
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional, Union
+
+from dotenv import load_dotenv
 
 from ..client import get_client
 
 # Configurer le logger
 logger = logging.getLogger("grist_mcp_server")
 
+# Load environment variables
+load_dotenv()
 
 def register_record_tools(mcp_server):
     """
@@ -36,86 +41,118 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
     Convert datetime string to Unix timestamp.
 
     Supports two formats:
-    - DateTime: "2025-12-28 07:52 UTC +8"
-    - Date: "2025-12-28 UTC +8"
+    1. DateTime with explicit timezone: "2025-12-28 14:30 UTC+8"
+    2. DateTime without timezone: "2025-12-28 14:30" (uses TIMEZONE_OFFSET from .env)
+    3. Date only: "2025-12-28" (converted to midnight UTC+0)
 
     Args:
-        datetime_str: DateTime with UTC offset
+
+        datetime_str: DateTime string in one of the supported formats
+
+
 
     Returns:
-        Unix timestamp (int)
+
+    Unix timestamp (int)
 
     Raises:
-        ValueError: If format is invalid
+
+    ValueError: If format is invalid
+
+    Environment Variables:
+
+    TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to "+0" if not set.
     """
     datetime_str = datetime_str.strip()
 
-    # Try DateTime format first: "YYYY-MM-DD HH:MM UTC +offset"
-    pattern_datetime = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC ([+-]\d+)'
-    match = re.match(pattern_datetime, datetime_str)
-
+    # Get default timezone offset from environment
+    default_offset = os.environ.get("TIMEZONE_OFFSET", "+0")
+    
+    # Pattern 1: DateTime with explicit timezone "YYYY-MM-DD HH:MM UTC±offset"
+    pattern_datetime_tz = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC([+-]\d+)'
+    match = re.match(pattern_datetime_tz, datetime_str)
+    
     if match:
         date_part, time_part, offset_hours = match.groups()
         dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
-    else:
-        # Try Date format: "YYYY-MM-DD UTC +offset"
-        pattern_date = r'(\d{4}-\d{2}-\d{2}) UTC ([+-]\d+)'
-        match = re.match(pattern_date, datetime_str)
-
-        if not match:
-            raise ValueError(
-                f"Invalid datetime format. Expected: 'YYYY-MM-DD HH:MM UTC +8' or 'YYYY-MM-DD UTC +8', "
-                f"got: '{datetime_str}'"
-            )
-
-        date_part, offset_hours = match.groups()
+        offset = timedelta(hours=int(offset_hours))
+        tz = timezone(offset)
+        dt_aware = dt.replace(tzinfo=tz)
+        return int(dt_aware.timestamp())
+    
+    # Pattern 2: DateTime without timezone "YYYY-MM-DD HH:MM"
+    pattern_datetime_no_tz = r'^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})$'
+    match = re.match(pattern_datetime_no_tz, datetime_str)
+    
+    if match:
+        date_part, time_part = match.groups()
+        dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
+        offset = timedelta(hours=int(default_offset))
+        tz = timezone(offset)
+        dt_aware = dt.replace(tzinfo=tz)
+        logger.debug(f"Using default timezone offset {default_offset} for datetime: {datetime_str}")
+        return int(dt_aware.timestamp())
+    
+    # Pattern 3: Date only "YYYY-MM-DD"
+    pattern_date = r'^(\d{4}-\d{2}-\d{2})$'
+    match = re.match(pattern_date, datetime_str)
+    
+    if match:
+        date_part = match.groups()[0]
         dt = datetime.strptime(f"{date_part} 00:00", "%Y-%m-%d %H:%M")
-
-    # Create timezone with offset
-    offset = timedelta(hours=int(offset_hours))
-    tz = timezone(offset)
-    dt_aware = dt.replace(tzinfo=tz)
-
-    return int(dt_aware.timestamp())
+        # Dates are always midnight UTC+0
+        tz = timezone(timedelta(hours=0))
+        dt_aware = dt.replace(tzinfo=tz)
+        logger.debug(f"Converting date to midnight UTC: {datetime_str}")
+        return int(dt_aware.timestamp())
+    
+    raise ValueError(
+        f"Invalid datetime format. Expected formats:\n"
+        f"  - DateTime with timezone: 'YYYY-MM-DD HH:MM UTC±offset' (e.g., '2025-12-28 14:30 UTC+8')\n"
+        f"  - DateTime without timezone: 'YYYY-MM-DD HH:MM' (e.g., '2025-12-28 14:30')\n"
+        f"  - Date only: 'YYYY-MM-DD' (e.g., '2025-12-28')\n"
+        f"Got: '{datetime_str}'"
+    )
 
 
 def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Convert datetime strings to GristObjCode format.
+    Convert datetime strings to Unix timestamps.
 
     Detects and converts:
-    - "YYYY-MM-DD HH:MM UTC +offset" → ["D", timestamp, "UTC"]
-    - "YYYY-MM-DD UTC +offset" → ["d", timestamp]
+    - "YYYY-MM-DD HH:MM UTC±offset" → Unix timestamp
+    - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE_OFFSET)
+    - "YYYY-MM-DD" → Unix timestamp (midnight UTC)
 
-    Leaves other values unchanged.
+    Leaves other values unchanged, including:
+    - Reference Lists: ["L", row_id1, row_id2, ...]
+    - Choice Lists: ["L", "item1", "item2", ...]
+    - All other column types
     """
-
     # Patterns for detection
-    datetime_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC [+-]\d+$'
-    date_pattern = r'^\d{4}-\d{2}-\d{2} UTC [+-]\d+$'
+    datetime_with_tz_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC[+-]\d+$'
+    datetime_no_tz_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$'
+    date_pattern = r'^\d{4}-\d{2}-\d{2}$'
 
     processed = []
     for record in records:
         new_record = {}
         for key, value in record.items():
             if isinstance(value, str):
-                if re.match(datetime_pattern, value):
-                    # DateTime with time component
+                if (re.match(datetime_with_tz_pattern, value) or 
+                    re.match(datetime_no_tz_pattern, value) or 
+                    re.match(date_pattern, value)):
+                    # Convert datetime/date string to Unix timestamp
                     timestamp = parse_datetime_to_unix(value)
-                    new_record[key] = ["D", timestamp, "UTC"]
-                elif re.match(date_pattern, value):
-                    # Date without time component
-                    timestamp = parse_datetime_to_unix(value)
-                    new_record[key] = ["d", timestamp]
+                    new_record[key] = timestamp
                 else:
                     # Regular string, leave it alone
                     new_record[key] = value
             else:
-                # Not a string, leave it alone
+                # Not a string (could be int, list, bool, etc.), leave it alone
                 new_record[key] = value
         processed.append(new_record)
     return processed
-
 
 async def add_grist_records(doc_id: str,
                             table_id: str,
@@ -127,27 +164,28 @@ async def add_grist_records(doc_id: str,
     DATETIME/DATE VALUES (Automatic Conversion)
     ============================================
     
-    Use simple string formats - automatic conversion to GristObjCode:
+    Use simple string formats - automatic conversion to Unix timestamps:
 
-    DateTime (with time):  "2025-12-28 14:30 UTC +8"  → ["D", timestamp, "UTC"]
-    Date (date only):      "2025-12-28 UTC +8"        → ["d", timestamp]
+    DateTime (with timezone):    "2025-12-28 14:30 UTC+8"  → Unix timestamp
+    DateTime (without timezone): "2025-12-28 14:30"        → Unix timestamp (uses TIMEZONE_OFFSET)
+    Date (date only):            "2025-12-28"              → Unix timestamp (midnight UTC)
 
-    Example:
-    {"DueDate": "2025-12-30 UTC +8", "CreatedAt": "2025-12-28 14:30 UTC +8"}
+    Examples:
+    {"DueDate": "2025-12-30", "CreatedAt": "2025-12-28 14:30"}
 
-    COMPLEX COLUMN TYPES (Manual GristObjCode)
-    ===========================================
+    COMPLEX COLUMN TYPES
+    =====================
 
     Other complex types require manual encoding:
 
     Choice List:        ["L", "item1", "item2", ...]
                         Example: {"Tags": ["L", "Urgent", "Planning"]}
 
-    Reference:          ["R", "table_id", row_id]
-                        Example: {"Lead": ["R", "People", 17]}
+    Reference:          row_id (integer)
+                        Example: {"Lead": 17}
 
-    Reference List:     ["r", "table_id", [row_id1, row_id2]]
-                        Example: {"Team": ["r", "People", [15, 16]]}
+    Reference List:     ["L", row_id1, row_id2, ...]
+                        Example: {"Team": ["L", 15, 16, 17]}
 
     REGULAR COLUMN TYPES
     ====================
@@ -159,17 +197,20 @@ async def add_grist_records(doc_id: str,
     Choice (single):    "High"
     Boolean:            true or false
 
+    Configuration:
+        Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8 for Malaysia)
+        Defaults to UTC+0 if not configured.
+
     COMPLETE EXAMPLE
     ================
-
     records = [{
         "Name": "Q1 Planning",                      # Text
         "Priority": "High",                         # Choice (single)
         "Tags": ["L", "Urgent", "Planning"],        # Choice List
-        "Lead": ["R", "People", 17],                # Reference
-        "Team": ["r", "People", [8, 9, 10]],        # Reference List
-        "StartDate": "2025-01-15 UTC +8",           # Date (auto-converted)
-        "CreatedAt": "2025-12-28 14:30 UTC +8",     # DateTime (auto-converted)
+        "Lead": 17,                                 # Reference
+        "Team": ["L", 8, 9, 10],                    # Reference List
+        "StartDate": "2025-01-15",                  # Date (auto-converted)
+        "CreatedAt": "2025-12-28 14:30",            # DateTime (auto-converted)
         "Budget": 50000,                            # Numeric
         "Active": true                              # Boolean
     }]
@@ -180,17 +221,13 @@ async def add_grist_records(doc_id: str,
 
         table_id: The table ID
 
-        records: List of records to add. Each record is a dictionary
-
-        where the keys are the column names and the values ​​are the data.
-
-        Example: [{"name": "Dupont", "first name": "Jean", "age": 35}]
+        records: List of records to add.
 
 
 
     Returns:
 
-    Dict with status, message and IDs of created records:
+    Dict with status, message, and IDs of created records:
 
     {
 
@@ -249,12 +286,16 @@ async def add_grist_records_safe(doc_id: str,
     DATETIME CONVERSION (Automatic)
     --------------------------------
 
-    Datetime strings are automatically converted to GristObjCode:
-    - DateTime: "YYYY-MM-DD HH:MM UTC +offset" → ["D", timestamp, "UTC"]
-    - Date: "YYYY-MM-DD UTC +offset" → ["d", timestamp]
+    Datetime strings are automatically converted to Unix timestamps:
+    - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
+    - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
+    - Date: "2025-12-28" → Unix timestamp (midnight UTC)
 
-    For other GristObjCode types (Choice List, Reference, Reference List),
+    For other column types (Choice List, Reference, Reference List),
     see add_grist_records() docstring for complete documentation.
+
+    Configuration:
+        Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
 
     Prerequisites:
 
@@ -370,12 +411,16 @@ async def update_grist_records(doc_id: str,
     DATETIME CONVERSION (Automatic)
     --------------------------------
 
-    Datetime strings are automatically converted to GristObjCode:
-    - DateTime: "YYYY-MM-DD HH:MM UTC +offset" → ["D", timestamp, "UTC"]
-    - Date: "YYYY-MM-DD UTC +offset" → ["d", timestamp]
+    Datetime strings are automatically converted to Unix timestamps:
+    - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
+    - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
+    - Date: "2025-12-28" → Unix timestamp (midnight UTC)
 
-    For other GristObjCode types (Choice List, Reference, Reference List),
+    For other column types (Choice List, Reference, Reference List),
     see add_grist_records() docstring for complete documentation.
+
+    Configuration:
+        Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
 
     Prerequisites:
 
@@ -395,9 +440,9 @@ async def update_grist_records(doc_id: str,
 
         records: List of records to be updated.
 
-    Each record must contain an 'id' field
+                 Each record must contain an 'id' field
 
-        Example: [{"id": 1, "name": "Smith", "first_name": "John"}]
+                 Example: [{"id": 1, "name": "Smith", "first_name": "John"}]
 
 
 
