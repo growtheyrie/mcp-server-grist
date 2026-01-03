@@ -41,9 +41,12 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
     Convert datetime string to Unix timestamp.
 
     Supports two formats:
-    1. DateTime with explicit timezone: "2025-12-28 14:30 UTC+8"
-    2. DateTime without timezone: "2025-12-28 14:30" (uses TIMEZONE_OFFSET from .env)
-    3. Date only: "2025-12-28" (converted to midnight UTC+0)
+
+        1. DateTime with explicit timezone: "2025-12-28 14:30 UTC+8"
+
+        2. DateTime without timezone: "2025-12-28 14:30" (uses TIMEZONE_OFFSET from .env)
+
+        3. Date only: "2025-12-28" (converted to midnight UTC+0)
 
     Args:
 
@@ -120,14 +123,20 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
     Convert datetime strings to Unix timestamps.
 
     Detects and converts:
-    - "YYYY-MM-DD HH:MM UTC±offset" → Unix timestamp
-    - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE_OFFSET)
-    - "YYYY-MM-DD" → Unix timestamp (midnight UTC)
+
+        - "YYYY-MM-DD HH:MM UTC±offset" → Unix timestamp
+
+        - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE_OFFSET)
+
+        - "YYYY-MM-DD" → Unix timestamp (midnight UTC)
 
     Leaves other values unchanged, including:
-    - Reference Lists: ["L", row_id1, row_id2, ...]
-    - Choice Lists: ["L", "item1", "item2", ...]
-    - All other column types
+
+        - Reference Lists: ["L", row_id1, row_id2, ...]
+
+        - Choice Lists: ["L", "item1", "item2", ...]
+
+        - All other column types
     """
     # Patterns for detection
     datetime_with_tz_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC[+-]\d+$'
@@ -160,31 +169,37 @@ async def add_grist_records(doc_id: str,
                             ctx=None) -> Dict[str, Any]:
     """
     Adds records to a Grist table.
-    
+
     DATETIME/DATE VALUES (Automatic Conversion)
-    ============================================
-    
+    ===========================================
+
     Use simple string formats - automatic conversion to Unix timestamps:
 
-    DateTime (with timezone):    "2025-12-28 14:30 UTC+8"  → Unix timestamp
-    DateTime (without timezone): "2025-12-28 14:30"        → Unix timestamp (uses TIMEZONE_OFFSET)
-    Date (date only):            "2025-12-28"              → Unix timestamp (midnight UTC)
+        - DateTime (with timezone): "2025-12-28 14:30 UTC+8" → Unix timestamp
+
+        - DateTime (without timezone): "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
+
+        - Date (date only): "2025-12-28" → Unix timestamp (midnight UTC)
 
     Examples:
-    {"DueDate": "2025-12-30", "CreatedAt": "2025-12-28 14:30"}
+
+    {"Due_Date": "2025-12-30", "Created_At": "2025-12-28 14:30"}
 
     COMPLEX COLUMN TYPES
-    =====================
+    ====================
 
     Other complex types require manual encoding:
 
     Choice List:        ["L", "item1", "item2", ...]
+
                         Example: {"Tags": ["L", "Urgent", "Planning"]}
 
     Reference:          row_id (integer)
+
                         Example: {"Lead": 17}
 
     Reference List:     ["L", row_id1, row_id2, ...]
+
                         Example: {"Team": ["L", 15, 16, 17]}
 
     REGULAR COLUMN TYPES
@@ -198,19 +213,22 @@ async def add_grist_records(doc_id: str,
     Boolean:            true or false
 
     Configuration:
-        Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8 for Malaysia)
-        Defaults to UTC+0 if not configured.
+
+        - Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8 for Malaysia)
+
+        - Defaults to UTC+0 if not configured.
 
     COMPLETE EXAMPLE
     ================
+
     records = [{
         "Name": "Q1 Planning",                      # Text
         "Priority": "High",                         # Choice (single)
         "Tags": ["L", "Urgent", "Planning"],        # Choice List
         "Lead": 17,                                 # Reference
         "Team": ["L", 8, 9, 10],                    # Reference List
-        "StartDate": "2025-01-15",                  # Date (auto-converted)
-        "CreatedAt": "2025-12-28 14:30",            # DateTime (auto-converted)
+        "Start_Date": "2025-01-15",                 # Date (auto-converted)
+        "Created_At": "2025-12-28 14:30",           # DateTime (auto-converted)
         "Budget": 50000,                            # Numeric
         "Active": true                              # Boolean
     }]
@@ -221,7 +239,11 @@ async def add_grist_records(doc_id: str,
 
         table_id: The table ID
 
-        records: List of records to add.
+        records: List of records to add. Every record is a dictionary where the
+
+                 keys are the column IDs (not labels), and the values are the data.
+
+                 Example: [{"Name": "Smith", "First_Name": "John", "Age": 35}]
 
 
 
@@ -284,18 +306,23 @@ async def add_grist_records_safe(doc_id: str,
     before adding the records, and suggests corrections if necessary.
 
     DATETIME CONVERSION (Automatic)
-    --------------------------------
+    -------------------------------
 
     Datetime strings are automatically converted to Unix timestamps:
-    - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
-    - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
-    - Date: "2025-12-28" → Unix timestamp (midnight UTC)
+
+        - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
+
+        - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
+
+        - Date: "2025-12-28" → Unix timestamp (midnight UTC)
 
     For other column types (Choice List, Reference, Reference List),
+
     see add_grist_records() docstring for complete documentation.
 
     Configuration:
-        Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
+
+        - Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
 
     Prerequisites:
 
@@ -315,7 +342,11 @@ async def add_grist_records_safe(doc_id: str,
 
         table_id: The table ID
 
-        Records: List of records to add
+        Records: List of records to add. Every record is a dictionary where the
+
+                 keys are the column IDs (not labels), and the values are the data.
+
+                 Column validation with helpful suggestions happens automatically.
 
 
 
@@ -409,18 +440,23 @@ async def update_grist_records(doc_id: str,
     Updates existing records in a Grist table.
 
     DATETIME CONVERSION (Automatic)
-    --------------------------------
+    -------------------------------
 
     Datetime strings are automatically converted to Unix timestamps:
-    - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
-    - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
-    - Date: "2025-12-28" → Unix timestamp (midnight UTC)
+
+        - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
+
+        - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
+
+        - Date: "2025-12-28" → Unix timestamp (midnight UTC)
 
     For other column types (Choice List, Reference, Reference List),
+
     see add_grist_records() docstring for complete documentation.
 
     Configuration:
-        Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
+
+        - Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
 
     Prerequisites:
 
@@ -438,11 +474,11 @@ async def update_grist_records(doc_id: str,
 
         table_id: The table ID
 
-        records: List of records to be updated.
+        records: List of records to update. Each record must contain an 'id' field
 
-                 Each record must contain an 'id' field
+                 plus any column IDs to update (use list_records to see structure).
 
-                 Example: [{"id": 1, "name": "Smith", "first_name": "John"}]
+                 Example: [{"id": 5, "Status": "Active", "Expiry_Date": "2027-03-28"}]
 
 
 
@@ -517,8 +553,9 @@ async def delete_grist_records(doc_id: str,
 
         table_id: The table ID
 
-        record_ids: List of IDs of records to delete
+        record_ids: List of record IDs to delete
 
+                    Example: [77, 78, 79]
 
 
     Returns:
