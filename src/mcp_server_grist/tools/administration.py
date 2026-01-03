@@ -803,12 +803,9 @@ async def create_column(
 
         1. list_tables(doc_id) → get table_id
 
-        2. create_column(doc_id, table_id, "Status", "Status") → create skeleton
+        2. create_column(doc_id, table_id, column_id, label) → create skeleton
 
-        3. modify_column(doc_id, table_id, "Status",
-                         column_type="Choice",
-                         description="Current project status",
-                         widget_options={"choices": ["Active", "Completed"]}) → add details
+        3. modify_column(doc_id, table_id, column_id, ...) → add details
 
         4. list_columns(doc_id, table_id) → verify
 
@@ -886,33 +883,38 @@ async def modify_column(
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Modifies column properties - the primary tool for adding rich column metadata.
+    Modifies column properties - the primary tool for enriching column metadata.
 
     TYPICAL USE CASE:
-    After creating a table with create_table, use this tool to add:
+    After creating a table with create_table OR creating a column with create_column,
+    use this tool to add:
         - Column type (Text, Numeric, Date, Choice, Reference, etc.)
-        - Description (crucial for AI understanding)
+        - Description (crucial for AI and human understanding)
         - Widget options (choices, date formats, reference tables)
         - Formulas for calculated columns
 
     Prerequisites:
 
-        - list_columns: To obtain valid column_id and see current properties
+        - list_columns: Use this first ONLY if modifying an existing column
+                        (to discover the column_id and see current properties)
 
-        - create_table: Usually run first to create the table skeleton
-
-        - create_column: Usually run first to create the column skeleton
+        - create_table OR create_column: Use one of these first ONLY if adding 
+                                         details to a newly-created column skeleton
 
     Typical workflow:
 
-        1. create_table(doc_id, "Projects", [...]) → create skeleton
+        Scenario A - Enriching a newly-created column:
 
-        2. modify_column(doc_id, "Projects", "Priority_Level",
-                         column_type="Choice",
-                         description="Urgency level for task processing",
-                         widget_options={"choices": ["High", "Medium", "Low"]}) → add details
+            1. create_table(doc_id, table_id, columns=[...]) OR
+               create_column(doc_id, table_id, column_id, label) → create skeleton
 
-        3. list_columns(doc_id, "Projects") → verify changes
+            2. modify_column(doc_id, table_id, column_id, ...) → add details
+
+        Scenario B - Modifying an existing column:
+
+            1. list_columns(doc_id, table_id) → get column_id
+
+            2. modify_column(doc_id, table_id, column_id, ...) → modify details
 
     Args:
 
@@ -922,15 +924,15 @@ async def modify_column(
 
         column_id: Current column ID (e.g., "Priority_Level", "Start_Date")
 
-        column_type: Data type (optional) - see examples below
+        column_type: New data type (optional) - see examples below
 
-        label: Display label (optional)
+        label: New display label (optional)
 
-        description: Explanation of column's purpose (optional but recommended)
+        description: New explanation of column's purpose (optional but recommended)
 
-        formula: Formula for calculated columns (optional)
+        formula: New formula for calculated columns (optional)
 
-        widget_options: Display/behavior options as dict (optional)
+        widget_options: New display/behavior options as dict (optional)
 
     COLUMN TYPES WITH EXAMPLES:
 
