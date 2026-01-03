@@ -695,7 +695,7 @@ async def create_table(
 
         1. list_documents(workspace_id) → get doc_id
 
-        2. create_table(doc_id, "Projects", columns) → create skeleton
+        2. create_table(doc_id, table_name, columns) → create skeleton
 
         3. modify_column(doc_id, table_id, column_id, ...) → add details for each column
 
