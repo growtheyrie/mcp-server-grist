@@ -188,27 +188,24 @@ async def add_grist_records(doc_id: str,
 
     Other complex types require manual encoding:
 
-    Choice List: ["L", "item1", "item2", ...]
-    Example: {"Tags": ["L", "Urgent", "Planning"]}
+        - Choice List: ["L", "item1", "item2", ...], Example: {"Tags": ["L", "Urgent", "Planning"]}
 
-    Reference: row_id (integer)
-    Example: {"Lead": 17}
+        - Reference: row_id (integer), Example: {"Lead": 17}
 
-    Reference List: ["L", row_id1, row_id2, ...]
-    Example: {"Team": ["L", 15, 16, 17]}
+        - Reference List: ["L", row_id1, row_id2, ...], Example: {"Team": ["L", 15, 16, 17]}
 
     REGULAR COLUMN TYPES
     ====================
 
     Use plain values (no encoding needed):
 
-    Text: "Hello World"
+        - Text: "Hello World"
 
-    Numeric: 42 or 3.14
+        - Numeric: 42 or 3.14
 
-    Choice (single): "High"
+        - Choice (single): "High"
 
-    Boolean: true or false
+        - Boolean: true or false
 
     Configuration:
 
@@ -220,15 +217,15 @@ async def add_grist_records(doc_id: str,
     ================
 
     records = [{
-        "Name": "Q1 Planning",                      # Text
-        "Priority": "High",                         # Choice (single)
-        "Tags": ["L", "Urgent", "Planning"],        # Choice List
-        "Lead": 17,                                 # Reference
-        "Team": ["L", 8, 9, 10],                    # Reference List
-        "Start_Date": "2025-01-15",                 # Date (auto-converted)
-        "Created_At": "2025-12-28 14:30",           # DateTime (auto-converted)
-        "Budget": 50000,                            # Numeric
-        "Active": true                              # Boolean
+        "Name": "Q1 Planning", # Text
+        "Priority": "High", # Choice (single)
+        "Tags": ["L", "Urgent", "Planning"], # Choice List
+        "Lead": 17, # Reference
+        "Team": ["L", 8, 9, 10], # Reference List
+        "Start_Date": "2025-01-15", # Date (auto-converted)
+        "Created_At": "2025-12-28 14:30", # DateTime (auto-converted)
+        "Budget": 50000, # Numeric
+        "Active": true # Boolean
     }]
 
     Args:
