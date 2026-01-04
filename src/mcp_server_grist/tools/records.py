@@ -1,8 +1,8 @@
 """
-Outils de gestion des enregistrements pour l'API Grist.
+Record management tools for the Grist API.
 
-Ce module contient des outils MCP pour manipuler les enregistrements
-dans les tables Grist: ajout, update et deletion.
+This module contains MCP tools for manipulating records
+in Grist tables: add, update, and delete.
 """
 
 import logging
@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 from ..client import get_client
 
-# Configurer le logger
+# Cofingure the logger
 logger = logging.getLogger("grist_mcp_server")
 
 # Load environment variables
@@ -23,12 +23,12 @@ load_dotenv()
 
 def register_record_tools(mcp_server):
     """
-    Enregistre tous les outils de gestion des enregistrements sur le serveur MCP.
+    Registers all record management tools on the MCP server.
     
     Args:
-        mcp_server: L'instance du serveur MCP sur laquelle enregistrer les outils.
+        mcp_server: The instance of the MCP server to save the tools to.
     """
-    # Enregistrement des outils sur le serveur MCP
+    # Registering tools on the MCP server
     mcp_server.tool()(add_grist_records)
     mcp_server.tool()(add_grist_records_safe)
     mcp_server.tool()(update_grist_records)
@@ -38,9 +38,14 @@ def register_record_tools(mcp_server):
 # --- Helper Method for DateTime Conversion ---
 def parse_datetime_to_unix(datetime_str: str) -> int:
     """
-    Convert datetime string to Unix timestamp.
+    Convert a datetime or date string to a Unix timestamp (seconds).
 
-    Supports two formats:
+    Supported input formats:
+        - "YYYY-MM-DD HH:MM UTC±H"  (explicit timezone offset in whole hours,
+          e.g. "2025-12-28 14:30 UTC+8")
+        - "YYYY-MM-DD HH:MM"        (no timezone; the environment variable
+          `TIMEZONE_OFFSET` is applied, see below)
+        - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
         1. DateTime with explicit timezone: "2025-12-28 14:30 UTC+8"
 
@@ -263,7 +268,7 @@ async def add_grist_records(doc_id: str,
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré",
+                "message": "Grist client not configured",
                 "record_ids": []
             }
 
@@ -275,14 +280,14 @@ async def add_grist_records(doc_id: str,
         return {
             "success": True,
             "message":
-            f"{len(record_ids)} enregistrements ajoutés avec succès",
+            f"{len(record_ids)} records successfully added",
             "record_ids": record_ids
         }
     except Exception as e:
         logger.error(f"Error in add_grist_records: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de l'ajout des enregistrements: {str(e)}",
+            "message": f"Error adding records: {str(e)}",
             "record_ids": []
         }
 
@@ -356,11 +361,11 @@ async def add_grist_records_safe(doc_id: str,
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré",
+                "message": "Grist client not configured",
                 "record_ids": []
             }
 
-        # Validation 1: Vérifier si la table existe
+        # Validation 1: Check if the table exists
         table_validation = await client.validate_table_exists(doc_id, table_id)
         if not table_validation.get("exists", False):
             return {
@@ -375,14 +380,14 @@ async def add_grist_records_safe(doc_id: str,
                 "record_ids": []
             }
 
-        # Validation 2: Vérifier les names de colonnes si des enregistrements sont fournis
+        # Validation 2: Check column names if records are provided
         if records and isinstance(records, list) and len(records) > 0:
-            # Extraire tous les names de colonnes utilisés
+            # Extract all column names in use
             column_names = set()
             for record in records:
                 column_names.update(record.keys())
 
-            # Valider l'existence des colonnes
+            # Validate the existence of columns
             columns_validation = await client.validate_columns_exist(
                 doc_id, table_id, list(column_names))
             if not columns_validation.get(
@@ -404,13 +409,13 @@ async def add_grist_records_safe(doc_id: str,
         # Preprocess datetime strings
         records = preprocess_datetime_values(records)
 
-        # Si tout est valide, ajouter les enregistrements
+        # If everything is valid, add the records
         record_ids = await client.add_records(doc_id, table_id, records)
 
         return {
             "success": True,
             "message":
-            f"{len(record_ids)} enregistrements ajoutés avec succès après validation",
+            f"{len(record_ids)} records successfully added after validation",
             "record_ids": record_ids
         }
     except Exception as e:
@@ -418,7 +423,7 @@ async def add_grist_records_safe(doc_id: str,
         return {
             "success": False,
             "message":
-            f"Erreur lors de l'ajout sécurisé des enregistrements: {str(e)}",
+            f"Error when securely adding records: {str(e)}",
             "record_ids": []
         }
 
@@ -484,17 +489,17 @@ async def update_grist_records(doc_id: str,
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré",
+                "message": "Grist client not configured",
                 "record_ids": []
             }
 
-        # Vérifier que tous les enregistrements ont un ID
+        # Vérify that all records have IDs
         for i, record in enumerate(records):
             if "id" not in record:
                 return {
                     "success": False,
                     "message":
-                    f"L'enregistrement à l'index {i} n'a pas d'ID. Chaque enregistrement doit contenir un champ 'id'.",
+                    f"The ID in index {i} is not an integer. IDs must be integers.",
                     "record_ids": []
                 }
 
@@ -506,7 +511,7 @@ async def update_grist_records(doc_id: str,
         return {
             "success": True,
             "message":
-            f"{len(record_ids)} enregistrements mis à jour avec succès",
+            f"{len(record_ids)} records successfully updated",
             "record_ids": record_ids
         }
     except Exception as e:
@@ -514,7 +519,7 @@ async def update_grist_records(doc_id: str,
         return {
             "success": False,
             "message":
-            f"Erreur lors de la update des enregistrements: {str(e)}",
+            f"Error when updating records: {str(e)}",
             "record_ids": []
         }
 
@@ -557,16 +562,16 @@ async def delete_grist_records(doc_id: str,
     try:
         client = get_client(ctx)
         if not client:
-            return {"success": False, "message": "Client Grist non configuré"}
+            return {"success": False, "message": "Grist client not configured"}
 
-        # Vérifier que tous les IDs sont des entiers
+        # Check that all IDs are integers
         for i, record_id in enumerate(record_ids):
             if not isinstance(record_id, int):
                 return {
                     "success":
                     False,
                     "message":
-                    f"L'ID à l'index {i} ({record_id}) n'est pas un entier. Tous les IDs doivent être des entiers."
+                    f"L'ID à l'index {i} ({record_id}) is not an integer. IDs must be integers."
                 }
 
         await client.delete_records(doc_id, table_id, record_ids)
@@ -574,12 +579,12 @@ async def delete_grist_records(doc_id: str,
         return {
             "success": True,
             "message":
-            f"{len(record_ids)} enregistrements supprimés avec succès"
+            f"{len(record_ids)} records successfully deleted"
         }
     except Exception as e:
         logger.error(f"Error in delete_grist_records: {str(e)}")
         return {
             "success": False,
             "message":
-            f"Erreur lors de la deletion des enregistrements: {str(e)}"
+            f"Error when deleting records: {str(e)}"
         }
