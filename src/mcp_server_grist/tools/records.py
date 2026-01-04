@@ -52,8 +52,6 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
 
         datetime_str: DateTime string in one of the supported formats
 
-
-
     Returns:
 
     Unix timestamp (int)
@@ -64,7 +62,7 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
 
     Environment Variables:
 
-    TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to "+0" if not set.
+        TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to "+0" if not set.
     """
     datetime_str = datetime_str.strip()
 
@@ -245,19 +243,17 @@ async def add_grist_records(doc_id: str,
 
                  Example: [{"Name": "Smith", "First_Name": "John", "Age": 35}]
 
-
-
     Returns:
 
     Dict with status, message, and IDs of created records:
 
     {
 
-    "success": True/False,
+        "success": True/False,
 
-    "message": "Success or error message",
+        "message": "Success or error message",
 
-    "record_ids": [1, 2, 3] # IDs of the created records
+        "record_ids": [1, 2, 3] # IDs of the created records
 
     }
     """
@@ -347,8 +343,6 @@ async def add_grist_records_safe(doc_id: str,
                  keys are the column IDs (not labels), and the values are the data.
 
                  Column validation with helpful suggestions happens automatically.
-
-
 
     Returns:
 
@@ -480,8 +474,6 @@ async def update_grist_records(doc_id: str,
 
                  Example: [{"id": 5, "Status": "Active", "Expiry_Date": "2027-03-28"}]
 
-
-
     Returns:
 
     Dict with updated status, message, and record IDs
@@ -556,7 +548,6 @@ async def delete_grist_records(doc_id: str,
         record_ids: List of record IDs to delete
 
                     Example: [77, 78, 79]
-
 
     Returns:
 
