@@ -48,8 +48,7 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
     Environment Variables:
-        TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to 
-            "+0" if not set.
+        TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to "+0" if not set.
 
     Args:
         datetime_str: Datetime or date string to convert into a timestamp
