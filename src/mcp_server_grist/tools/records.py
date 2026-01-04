@@ -188,7 +188,7 @@ async def add_grist_records(doc_id: str,
 
     Other complex types require manual encoding:
 
-    Choice List: ["L", "item1", "item2", ...] 
+    Choice List: ["L", "item1", "item2", ...]
     Example: {"Tags": ["L", "Urgent", "Planning"]}
 
     Reference: row_id (integer)
