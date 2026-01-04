@@ -41,33 +41,24 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
     Convert a datetime or date string to a Unix timestamp (seconds).
 
     Supported input formats:
-        - "YYYY-MM-DD HH:MM UTC±H"  (explicit timezone offset in whole hours,
+        - "YYYY-MM-DD HH:MM UTC±H"  (explicit timezone offset in whole hours, 
           e.g. "2025-12-28 14:30 UTC+8")
         - "YYYY-MM-DD HH:MM"        (no timezone; the environment variable
           `TIMEZONE_OFFSET` is applied, see below)
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
-        1. DateTime with explicit timezone: "2025-12-28 14:30 UTC+8"
-
-        2. DateTime without timezone: "2025-12-28 14:30" (uses TIMEZONE_OFFSET from .env)
-
-        3. Date only: "2025-12-28" (converted to midnight UTC+0)
+    Environment Variables:
+        TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to 
+            "+0" if not set.
 
     Args:
-
-        datetime_str: DateTime string in one of the supported formats
+        datetime_str: Datetime or date string to convert into a timestamp
 
     Returns:
-
-    Unix timestamp (int)
+        Unix timestamp in seconds (UTC-aware)
 
     Raises:
-
-    ValueError: If format is invalid
-
-    Environment Variables:
-
-        TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to "+0" if not set.
+        ValueError: If format is invalid
     """
     datetime_str = datetime_str.strip()
 
