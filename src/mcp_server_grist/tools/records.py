@@ -188,27 +188,27 @@ async def add_grist_records(doc_id: str,
 
     Other complex types require manual encoding:
 
-    Choice List:        ["L", "item1", "item2", ...]
+    Choice List: ["L", "item1", "item2", ...]    
+    Example: {"Tags": ["L", "Urgent", "Planning"]}
 
-                        Example: {"Tags": ["L", "Urgent", "Planning"]}
+    Reference: row_id (integer)
+    Example: {"Lead": 17}
 
-    Reference:          row_id (integer)
-
-                        Example: {"Lead": 17}
-
-    Reference List:     ["L", row_id1, row_id2, ...]
-
-                        Example: {"Team": ["L", 15, 16, 17]}
+    Reference List: ["L", row_id1, row_id2, ...]
+    Example: {"Team": ["L", 15, 16, 17]}
 
     REGULAR COLUMN TYPES
     ====================
 
     Use plain values (no encoding needed):
 
-    Text:               "Hello World"
-    Numeric:            42 or 3.14
-    Choice (single):    "High"
-    Boolean:            true or false
+    Text: "Hello World"
+
+    Numeric: 42 or 3.14
+
+    Choice (single): "High"
+
+    Boolean: true or false
 
     Configuration:
 
