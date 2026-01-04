@@ -42,9 +42,9 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
 
     Supported input formats:
         - "YYYY-MM-DD HH:MM UTC±H"  (explicit timezone offset in whole hours, 
-          e.g. "2025-12-28 14:30 UTC+8")
+                                     e.g. "2025-12-28 14:30 UTC+8")
         - "YYYY-MM-DD HH:MM"        (no timezone; the environment variable
-          `TIMEZONE_OFFSET` is applied, see below)
+                                     `TIMEZONE_OFFSET` is applied, see below)
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
     Environment Variables:
@@ -113,22 +113,16 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
 
 def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Convert datetime strings to Unix timestamps.
+    Scan a list of record dicts and convert datetime strings to Unix timestamps.
 
     Detects and converts:
-
         - "YYYY-MM-DD HH:MM UTC±offset" → Unix timestamp
-
-        - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE_OFFSET)
-
+        - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE_OFFSET env var)
         - "YYYY-MM-DD" → Unix timestamp (midnight UTC)
 
     Leaves other values unchanged, including:
-
         - Reference Lists: ["L", row_id1, row_id2, ...]
-
         - Choice Lists: ["L", "item1", "item2", ...]
-
         - All other column types
     """
     # Patterns for detection
