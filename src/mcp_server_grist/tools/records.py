@@ -48,7 +48,7 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
     Environment Variables:
-        TIMEZONE_OFFSET: Default timezone offset (e.g., "+8", "-5"). Defaults to "+0" if not set.
+        TIMEZONE_OFFSET: UTC offset for timezone (e.g., "+8", "-5"). Defaults to "+0" if not set.
 
     Args:
         datetime_str: Datetime or date string to convert into a timestamp
@@ -150,6 +150,7 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
         processed.append(new_record)
     return processed
 
+
 async def add_grist_records(doc_id: str,
                             table_id: str,
                             records: List[Dict[str, Any]],
@@ -157,91 +158,50 @@ async def add_grist_records(doc_id: str,
     """
     Adds records to a Grist table.
 
-    DATETIME/DATE VALUES (Automatic Conversion)
-    ===========================================
+    Column type and encoding brief:
+        - Text: plain string, e.g. `"Name": "Alice"`
+        - Numeric: int/float, e.g. `"Budget": 50000`
+        - Boolean: true/false, e.g. `"Active": true`
+        - Choice (single): string, e.g. `"Priority": "High"`
+        - Choice list: array of strings with "L" prefix, e.g. `"Tags": ["L", "Urgent", "Planning"]`
+        - Reference (single): integer row id, e.g. `"Lead": 17`
+        - Reference list: array of integer row ids with "L" prefix, e.g. `"Team": ["L", 8, 9, 10]`
+        - Datetime (with timezone): string, e.g. `"Created_At": "2025-12-28 14:30 UTC+8"`
+        - Datetime (without timezone): string, e.g. `"Tested_At": "2025-12-28 14:30"`
+        - Date (date only): string, e.g. `"Due_Date": "2025-12-30"`
 
-    Use simple string formats - automatic conversion to Unix timestamps:
-
-        - DateTime (with timezone): "2025-12-28 14:30 UTC+8" → Unix timestamp
-
-        - DateTime (without timezone): "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
-
-        - Date (date only): "2025-12-28" → Unix timestamp (midnight UTC)
-
-    Examples:
-
-    {"Due_Date": "2025-12-30", "Created_At": "2025-12-28 14:30"}
-
-    COMPLEX COLUMN TYPES
-    ====================
-
-    Other complex types require manual encoding:
-
-        - Choice List: ["L", "item1", "item2", ...], Example: {"Tags": ["L", "Urgent", "Planning"]}
-
-        - Reference: row_id (integer), Example: {"Lead": 17}
-
-        - Reference List: ["L", row_id1, row_id2, ...], Example: {"Team": ["L", 15, 16, 17]}
-
-    REGULAR COLUMN TYPES
-    ====================
-
-    Use plain values (no encoding needed):
-
-        - Text: "Hello World"
-
-        - Numeric: 42 or 3.14
-
-        - Choice (single): "High"
-
-        - Boolean: true or false
-
-    Configuration:
-
-        - Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8 for Malaysia)
-
-        - Defaults to UTC+0 if not configured.
-
-    COMPLETE EXAMPLE
-    ================
-
-    records = [{
-        "Name": "Q1 Planning",                   # Text
-        "Priority": "High",                      # Choice (single)
-        "Tags": ["L", "Urgent", "Planning"],     # Choice List
-        "Lead": 17,                              # Reference
-        "Team": ["L", 8, 9, 10],                 # Reference List
-        "Start_Date": "2025-01-15",              # Date (auto-converted)
-        "Created_At": "2025-12-28 14:30",        # DateTime (auto-converted)
-        "Budget": 50000,                         # Numeric
-        "Active": true                           # Boolean
-    }]
+    Datetime and date brief:
+        - String values will automatically be converted into Unix timestamps in seconds UTC
+              for storage in Grist.
+        - Datetimes without timezones will automatically be assigned a timezone. This timezone
+              is determined by the TIMEZONE_OFFSET (e.g., "+8", "-5") from UTC, an environment
+              variable that defaults to "+0" if not set by the user.
 
     Args:
-
-        doc_id: The ID of the Grist document
-
-        table_id: The table ID
-
-        records: List of records to add. Every record is a dictionary where the
-
-                 keys are the column IDs (not labels), and the values are the data.
-
-                 Example: [{"Name": "Smith", "First_Name": "John", "Age": 35}]
+        - doc_id: The ID of the Grist document
+        - table_id: The table ID
+        - records: List of records to add. Every record is a dictionary where the
+              keys are the column IDs (not labels), and the values are the data.
+              Example:
+                  records = [{
+                      "Name": "Q1 Planning",
+                      "Priority": "High",
+                      "Tags": ["L", "Urgent", "Planning"],
+                      "Lead": 17,
+                      "Team": ["L", 8, 9, 10],
+                      "Start_Date": "2025-01-15",
+                      "Created_At": "2025-12-28 14:30",
+                      "Budget": 50000,
+                      "Active": true
+                  }]
 
     Returns:
-
-    Dict with status, message, and IDs of created records:
-
-    {
-
-        "success": True/False,
-
-        "message": "Success or error message",
-
-        "record_ids": [1, 2, 3] # IDs of the created records
-
-    }
+        Dict with status, message, and IDs of created records:
+            {
+                "success": True/False,
+                "message": "Success or error message",
+                "record_ids": [1, 2, 3] # IDs of the created records
+            }
     """
     logger.info(
         f"Tool called: add_grist_records for doc_id: {doc_id}, table_id: {table_id}"
@@ -284,57 +244,30 @@ async def add_grist_records_safe(doc_id: str,
     Adds records with prior validation of the structure.
 
     This secure version validates the existence of the table and columns
-
     before adding the records, and suggests corrections if necessary.
 
-    DATETIME CONVERSION (Automatic)
-    -------------------------------
-
-    Datetime strings are automatically converted to Unix timestamps:
-
-        - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
-
-        - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
-
-        - Date: "2025-12-28" → Unix timestamp (midnight UTC)
-
-    For other column types (Choice List, Reference, Reference List),
-
-    see add_grist_records() docstring for complete documentation.
-
-    Configuration:
-
-        - Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
+    References:
+        - add_grist_records docstring: See column type encoding, datetime handling
+              details, and complete example for records argument.
 
     Prerequisites:
-
         - list_tables, list_columns: performed automatically internally
 
     Typical workflow:
-
-        1. get_table_schema(doc_id, table_id) → understand the types
-
+        1. get_table_schema(doc_id, table_id) → understand column types
         2. add_grist_records_safe(doc_id, table_id, records) → validated insertion
-
         3. list_records(doc_id, table_id, limit=5) → check the result
 
     Args:
-
-        doc_id: The ID of the document
-
-        table_id: The table ID
-
-        Records: List of records to add. Every record is a dictionary where the
-
-                 keys are the column IDs (not labels), and the values are the data.
-
-                 Column validation with helpful suggestions happens automatically.
+        - doc_id: The ID of the document
+        - table_id: The table ID
+        - records: List of records to add. Every record is a dictionary where the
+              keys are the column IDs (not labels), and the values are the data.
+              Column validation with helpful suggestions happens automatically.
 
     Returns:
-
-    Dict with status, message, and possibly correction suggestions
-
-    and IDs of the records created if the operation was successful
+        Dict with status, message, possible correction suggestions,
+        and IDs of the records created if the operation was successful.
     """
     logger.info(
         f"Tool called: add_grist_records_safe for doc_id: {doc_id}, table_id: {table_id}"
@@ -419,50 +352,31 @@ async def update_grist_records(doc_id: str,
     """
     Updates existing records in a Grist table.
 
-    DATETIME CONVERSION (Automatic)
-    -------------------------------
-
-    Datetime strings are automatically converted to Unix timestamps:
-
-        - DateTime with timezone: "2025-12-28 14:30 UTC+8" → Unix timestamp
-
-        - DateTime without timezone: "2025-12-28 14:30" → Unix timestamp (uses TIMEZONE_OFFSET)
-
-        - Date: "2025-12-28" → Unix timestamp (midnight UTC)
-
-    For other column types (Choice List, Reference, Reference List),
-
-    see add_grist_records() docstring for complete documentation.
-
-    Configuration:
-
-        - Set TIMEZONE_OFFSET in .env file (e.g., TIMEZONE_OFFSET=+8)
+    References:
+        - add_grist_records docstring: See column type encoding and datetime handling
+             details.
 
     Prerequisites:
-
         - list_records: To obtain the IDs of the records to update
 
     Typical workflow:
-
         1. list_records(doc_id, table_id) → get the IDs
-
         2. update_grist_records(doc_id, table_id, records_with_id) → update
 
     Args:
-
-        doc_id: The ID of the document
-
-        table_id: The table ID
-
-        records: List of records to update. Each record must contain an 'id' field
-
-                 plus any column IDs to update (use list_records to see structure).
-
-                 Example: [{"id": 5, "Status": "Active", "Expiry_Date": "2027-03-28"}]
+        - doc_id: The ID of the document
+        - table_id: The table ID
+        - records: List of records to update. Each record must contain an 'id' field
+              plus any column IDs to update (keys are column IDs, not labels).
+              Example:
+                  [{
+                      "id": 5,
+                      "Status": "Active",
+                      "Expiry_Date": "2027-03-28"
+                  }]
 
     Returns:
-
-    Dict with updated status, message, and record IDs
+        Dict with updated status, message, and record IDs
     """
     logger.info(
         f"Tool called: update_grist_records for doc_id: {doc_id}, table_id: {table_id}"
@@ -516,28 +430,20 @@ async def delete_grist_records(doc_id: str,
     Deletes records from a Grist table.
 
     Prerequisites:
-
         - list_records: To get the IDs of the records to delete
 
     Typical workflow:
-
         1. list_records(doc_id, table_id) → get the IDs
-
         2. delete_grist_records(doc_id, table_id, record_ids) → deletion
 
     Args:
-
-        doc_id: The ID of the document
-
-        table_id: The table ID
-
-        record_ids: List of record IDs to delete
-
-                    Example: [77, 78, 79]
+        - doc_id: The ID of the document
+        - table_id: The table ID
+        - record_ids: List of record IDs to delete
+              Example: [77, 78, 79]
 
     Returns:
-
-    Dict with status and confirmation message
+        Dict with status and confirmation message
     """
     logger.info(
         f"Tool called: delete_grist_records for doc_id: {doc_id}, table_id: {table_id}"
