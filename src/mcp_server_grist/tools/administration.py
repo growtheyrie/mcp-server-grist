@@ -831,11 +831,11 @@ async def modify_column(
         - Choice list (multiple): column_type="ChoiceList", description="Category tags for filtering",
               widget_options={"choices": ["Urgent", "Planning", "Review"]}
         - Reference (link to another table): column_type="Ref:People", description="Team member responsible
-              (links to People table)". Note: Format is "Ref:Target_Table_ID"
+              (links to People table)", widget_options={"widget": "Reference"}. Note: Format is "Ref:Target_Table_ID".
         - Reference list (multiple links): column_type="RefList:People", description="All people working on this
-              project (links to People table)". Note: Format is "RefList:Target_Table_ID"
+              project (links to People table)". Note: Format is "RefList:Target_Table_ID".
         - Formula (calculated): column_type="Text", description="Automatically combines first and last name",
-              formula="$First_Name + ' ' + $Last_Name". Note: Use $Column_ID format to reference other columns
+              formula="$First_Name + ' ' + $Last_Name". Note: Use $Column_ID format to reference other columns.
         - Attachments: column_type="Attachments", description="Files, images, or documents related to this record"
 
     Returns:
