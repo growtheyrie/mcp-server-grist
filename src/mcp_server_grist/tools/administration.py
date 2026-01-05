@@ -654,7 +654,7 @@ async def create_table(
     Next steps:
         - Use modify_column to add type, description, widgetOptions, formulas
     """
-    logger.info(f"Tool called: create_table with doc_id: {doc_id}, table_id: {table_id}")
+    logger.info(f"Tool called: create_table with doc_id: {doc_id}, table_name: {table_name}")
 
     try:
         client = get_client(ctx)
@@ -677,7 +677,7 @@ async def create_table(
 
         return {
             "success": True,
-            "message": f"Table '{table_id}' successfully created",
+            "message": f"Table '{table_name}' successfully created",
             "table": result[0] if result else None
         }
     except Exception as e:
