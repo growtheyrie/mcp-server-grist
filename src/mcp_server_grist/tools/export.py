@@ -91,7 +91,7 @@ async def download_document_excel(
 
     Args:
         - doc_id: The ID of the document
-        - header: Header format (label, id, or none)
+        - header: Header format (colId or label, default: label)
 
     Returns:
         Dict with status, message, and content encoded in base64
