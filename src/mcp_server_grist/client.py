@@ -413,7 +413,7 @@ class GristClient:
         """Télécharge une table au format Excel."""
         params = {"tableId": table_id, "header": header}
         
-        logger.debug(f"Downloading document {doc_id} as Excel")
+        logger.debug(f"Downloading table {table_id} from document {doc_id} as Excel")
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:  # Augmenter timeout
                 response = await client.request(
@@ -430,14 +430,14 @@ class GristClient:
                 return response.content
                 
         except httpx.TimeoutException as e:
-            logger.error(f"Excel download timeout for doc {doc_id}: {e}")
+            logger.error(f"Excel download timeout for for table {table_id} in doc {doc_id}: {e}")
             raise ValueError(f"Excel download timeout - document may be too large. Try download_document_sqlite as alternative.")
         except httpx.HTTPStatusError as e:
-            logger.error(f"Excel download HTTP error for doc {doc_id}: {e}")
+            logger.error(f"Excel download HTTP error for table {table_id} in doc {doc_id}: {e}")
             logger.error(f"Response text: {e.response.text}")
             raise ValueError(f"Excel download failed: {e.response.status_code} - {e.response.text}")
         except Exception as e:
-            logger.error(f"Excel download unexpected error for doc {doc_id}: {e}")
+            logger.error(f"Excel download unexpected error for table {table_id} in doc {doc_id}: {e}")
             raise ValueError(f"Excel download failed: {str(e)}")
     
     async def download_table_csv(self, doc_id: str, table_id: str, header: str = "label") -> str:
