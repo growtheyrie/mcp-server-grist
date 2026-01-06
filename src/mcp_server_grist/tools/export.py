@@ -78,25 +78,28 @@ async def download_document_sqlite(
         }
 
 
-async def download_document_excel(
+async def download_table_excel(
     doc_id: str,
+    table_id: str,
     header: str = "label",
     ctx=None
 ) -> Dict[str, Any]:
     """
-    Downloads a Grist document in Excel format.
+    Downloads a Grist table in Excel format.
 
     Prerequisites:
         - list_documents: To obtain a valid doc_id
+        - list_tables: To obtain a valid table_id
 
     Args:
         - doc_id: The ID of the document
+        - table_id: The table ID
         - header: Header format (colId or label, default: label)
 
     Returns:
         Dict with status, message, and content encoded in base64
     """
-    logger.info(f"Tool called: download_document_excel with doc_id: {doc_id}")
+    logger.info(f"Tool called: download_table_excel with doc_id: {doc_id}, table_id: {table_id}")
 
     try:
         client = get_client(ctx)
@@ -112,16 +115,16 @@ async def download_document_excel(
                 "message": "Invalid header format. Must be: colId or label"
             }
 
-        content = await client.download_doc_xlsx(doc_id, header=header)
+        content = await client.download_table_xlsx(doc_id, table_id, header=header)
 
         # Encode binary content in base64
         encoded_content = base64.b64encode(content).decode('utf-8')
 
         return {
             "success": True,
-            "message": f"Document {doc_id} successfully downloaded in Excel format",
+            "message": f"Table {table_id} of document {doc_id} successfully downloaded in Excel format",
             "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "filename": f"{doc_id}.xlsx",
+            "filename": f"{table_id}.xlsx",
             "content_base64": encoded_content,
             "size_bytes": len(content)
         }
