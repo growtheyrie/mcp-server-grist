@@ -1,8 +1,8 @@
 """
-Outils d'export et téléchargement pour l'API Grist.
+Export and download tools for the Grist API.
 
-Ce module contient des outils MCP pour exporter et télécharger
-des documents et tables Grist dans différents formats.
+This module contains MCP tools for exporting and downloading
+Grist documents and tables in various formats.
 """
 
 import base64
@@ -11,16 +11,16 @@ from typing import Any, Dict, List, Optional, Union
 
 from ..client import get_client
 
-# Configurer le logger
+# Configure the logger
 logger = logging.getLogger("grist_mcp_server")
 
 
 def register_export_tools(mcp_server):
     """
-    Enregistre tous les outils d'export sur le serveur MCP.
-    
+    Saves all export tools to the MCP server.
+
     Args:
-        mcp_server: L'instance du serveur MCP sur laquelle enregistrer les outils.
+        mcp_server: The instance of the server to save the tools to.
     """
     mcp_server.tool()(download_document_sqlite)
     mcp_server.tool()(download_document_excel)
@@ -37,41 +37,34 @@ async def download_document_sqlite(
     Downloads a Grist document in SQLite format.
 
     Prerequisites:
-
         - list_documents: To obtain a valid doc_id
 
     Args:
-
-        doc_id: The ID of the document
-
-        nohistory: If True, excludes change history
-
-        template: If True, download as a template (without user data)
-
-
+        - doc_id: The ID of the document
+        - nohistory: If True, excludes change history
+        - template: If True, download as a template (without user data)
 
     Returns:
-
-    Dict with status, message and content encoded in base64
+        Dict with status, message, and content encoded in base64
     """
     logger.info(f"Tool called: download_document_sqlite with doc_id: {doc_id}")
-    
+
     try:
         client = get_client(ctx)
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré"
+                "message": "Grist client not configured"
             }
-        
+
         content = await client.download_doc(doc_id, nohistory=nohistory, template=template)
-        
-        # Encoder le contenu binaire en base64
+
+        # Encode binary content in base64
         encoded_content = base64.b64encode(content).decode('utf-8')
-        
+
         return {
             "success": True,
-            "message": f"Document {doc_id} téléchargé avec succès au format SQLite",
+            "message": f"Document {doc_id} successfully downloaded in SQLite format",
             "content_type": "application/x-sqlite3",
             "filename": f"{doc_id}.sqlite",
             "content_base64": encoded_content,
@@ -81,7 +74,7 @@ async def download_document_sqlite(
         logger.error(f"Error downloading document as SQLite: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors du téléchargement du document au format SQLite: {str(e)}"
+            "message": f"Error downloading document in SQLite format: {str(e)}"
         }
 
 
@@ -94,45 +87,39 @@ async def download_document_excel(
     Downloads a Grist document in Excel format.
 
     Prerequisites:
-
         - list_documents: To obtain a valid doc_id
 
     Args:
-
-        doc_id: The ID of the document
-
-        header: Header format (label, id, or none)
-
-
+        - doc_id: The ID of the document
+        - header: Header format (label, id, or none)
 
     Returns:
-
-    Dict with status, message and content encoded in base64
+        Dict with status, message, and content encoded in base64
     """
     logger.info(f"Tool called: download_document_excel with doc_id: {doc_id}")
-    
+
     try:
         client = get_client(ctx)
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré"
+                "message": "Grist client not configured"
             }
-        
-        if header not in ["label", "id", "none"]:
+
+        if header not in ["colId", "label"]:
             return {
                 "success": False,
-                "message": "Format d'en-tête invalide. Doit être: label, id, ou none"
+                "message": "Invalid header format. Must be: colId or label"
             }
-        
+
         content = await client.download_doc_xlsx(doc_id, header=header)
-        
-        # Encoder le contenu binaire en base64
+
+        # Encode binary content in base64
         encoded_content = base64.b64encode(content).decode('utf-8')
-        
+
         return {
             "success": True,
-            "message": f"Document {doc_id} téléchargé avec succès au format Excel",
+            "message": f"Document {doc_id} successfully downloaded in Excel format",
             "content_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             "filename": f"{doc_id}.xlsx",
             "content_base64": encoded_content,
@@ -142,7 +129,7 @@ async def download_document_excel(
         logger.error(f"Error downloading document as Excel: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors du téléchargement du document au format Excel: {str(e)}"
+            "message": f"Error downloading document in Excel format: {str(e)}"
         }
 
 
@@ -156,46 +143,38 @@ async def download_table_csv(
     Downloads a Grist table in CSV format.
 
     Prerequisites:
-
         - list_documents: To obtain a valid doc_id
-
         - list_tables: To obtain a valid table_id
 
     Args:
-
-        doc_id: The ID of the document
-
-        table_id: The table ID
-
-        header: Header format (colId or label, default: label)
-
-
+        - doc_id: The ID of the document
+        - table_id: The table ID
+        - header: Header format (colId or label, default: label)
 
     Returns:
-
-    Dict with status, message and CSV content
+        Dict with status, message, and CSV content
     """
     logger.info(f"Tool called: download_table_csv with doc_id: {doc_id}, table_id: {table_id}")
-    
+
     try:
         client = get_client(ctx)
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré"
+                "message": "Grist client not configured"
             }
-        
+
         if header not in ["colId", "label"]:
             return {
                 "success": False,
-                "message": "Format d'en-tête invalide. Doit être: colId ou label"
+                "message": "Invalid header format. Must be: colId or label"
             }
-        
+
         content = await client.download_table_csv(doc_id, table_id, header=header)
-        
+
         return {
             "success": True,
-            "message": f"Table {table_id} du document {doc_id} téléchargée avec succès au format CSV",
+            "message": f"Table {table_id} of document {doc_id} successfully downloaded in CSV format",
             "content_type": "text/csv",
             "filename": f"{table_id}.csv",
             "content": content,
@@ -205,5 +184,5 @@ async def download_table_csv(
         logger.error(f"Error downloading table as CSV: {e}")
         return {
             "success": False,
-            "message": f"Erreur lors du téléchargement de la table au format CSV: {str(e)}"
+            "message": f"Error downloading table in CSV format: {str(e)}"
         }
