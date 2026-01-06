@@ -409,7 +409,7 @@ class GristClient:
             response.raise_for_status()
             return response.content
     
-    async def download_table_xlsx(self, doc_id: str, header: str = "label") -> bytes:
+    async def download_table_xlsx(self, doc_id: str, table_id: str, header: str = "label") -> bytes:
         """Télécharge une table au format Excel."""
         params = {"tableId": table_id, "header": header}
         
