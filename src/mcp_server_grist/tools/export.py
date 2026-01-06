@@ -23,7 +23,7 @@ def register_export_tools(mcp_server):
         mcp_server: The instance of the server to save the tools to.
     """
     mcp_server.tool()(download_document_sqlite)
-    mcp_server.tool()(download_document_excel)
+    mcp_server.tool()(download_table_excel)
     mcp_server.tool()(download_table_csv)
 
 
