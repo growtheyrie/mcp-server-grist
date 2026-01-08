@@ -1,8 +1,8 @@
 """
-Outils de requêtes SQL pour l'API Grist.
+SQL query tools for the Grist API.
 
-Ce module contient des outils MCP pour exécuter des requêtes SQL
-sur les données Grist, permettant filtrage, tri et analyse.
+This module contains MCP tools for running SQL queries on
+Grist data, allowing filtering, sorting, and analysis.
 """
 
 import logging
@@ -11,18 +11,18 @@ from typing import Any, Dict, List, Optional, Union
 
 from ..client import get_client
 
-# Configurer le logger
+# Configure the logger
 logger = logging.getLogger("grist_mcp_server")
 
 
 def register_query_tools(mcp_server):
     """
-    Enregistre tous les outils de requêtes SQL sur le serveur MCP.
-    
+    Registers all SQL query tools in the MCP server.
+
     Args:
-        mcp_server: L'instance du serveur MCP sur laquelle enregistrer les outils.
+        mcp_server: The instance of the MCP server to save the tools to.
     """
-    # Enregistrement des outils sur le serveur MCP
+    # Registering tools in the MCP server
     mcp_server.tool()(filter_sql_query)
     mcp_server.tool()(execute_sql_query)
 
@@ -40,110 +40,85 @@ async def filter_sql_query(
     Executes a filtering SQL query on a Grist table.
 
     Simplified version for common SQL queries without writing SQL.
-
     For complex queries, use execute_sql_query.
 
     Recommended prerequisites:
-
         - list_tables(doc_id): Check if the table exists
-
-        - list_columns(doc_id, table_id): List the available columns
+        - list_columns(doc_id, table_id): Get correct column IDs
 
     Alternative to:
-
         - list_records: When you need to filter/sort
-
         - execute_sql_query: Simplified version for common cases
 
     Typical workflow:
-
-        1. list_columns(doc_id, table_id) → identify the columns
-
-        2. filter_sql_query(doc_id, table_id,
-
-    where_conditions={"status": "actif"},
-
-    order_by="date_creation DESC",
-
-    limit=10)
-
+        1. list_columns(doc_id, table_id) → get column IDs
+        2. filter_sql_query(doc_id, table_id, where_conditions={"Status": "Active"},
+               order_by="Creation_Date DESC", limit=10)
         3. Process the returned records
 
     Use case:
-
-        - Simple filtering: where_conditions={"status": "active"}
-
-        - Multiple filtering: where_conditions={"status": "active", "type": "A"}
-
-        - Sort: order_by="name" or order_by="value DESC"
-
+        - Simple filtering: where_conditions={"Status": "Active"}
+        - Multiple filtering: where_conditions={"Status": "Active", "Type": "A"}
+        - Sort: order_by="Name" or order_by="Value DESC"
         - Pagination: limit=20
-
-        - Specific columns: columns=["name", "value", "date"]
+        - Specific columns: columns=["Name", "Value", "Expiry_Date"]
 
     Args:
-
-        doc_id: Document ID
-
-        table_id: ID of the table to query
-
-        columns: List of columns to return (None = all)
-
-        where_conditions: Dict of conditions (implicit AND between conditions)
-
-        order_by: Sort column with optional direction (e.g., "name DESC")
-
-        limit: Maximum number of results
-
-
+        - doc_id: Document ID
+        - table_id: ID of the table to query
+        - columns: List of column IDs to return (None = all); use column IDs
+              (e.g., "Start_Date"), not labels ("Start Date")
+        - where_conditions: Dict of exact-match filters; implicit AND between conditions;
+              no operators (>, <, LIKE) permitted
+        - order_by: Sort specification using column ID (e.g., "Start_Date DESC")
+        - limit: Maximum number of results
 
     Returns:
-
-    Dict with filtered records and query metadata
+        Dict with filtered records and query metadata
     """
     logger.info(f"Tool called: filter_sql_query for doc_id: {doc_id}, table_id: {table_id}")
-    
+
     try:
-        # Construire la requête SQL
+        # Build SQL query
         columns_str = "*"
         if columns:
             columns_str = ", ".join([f'"{col}"' for col in columns])
-        
+
         sql_query = f'SELECT {columns_str} FROM "{table_id}"'
-        
+
         params = []
-        
-        # Ajouter les conditions WHERE
+
+        # Add WHERE conditions
         if where_conditions:
             conditions = []
             for col, value in where_conditions.items():
                 conditions.append(f'"{col}" = ?')
                 params.append(value)
-            
+
             if conditions:
                 sql_query += f" WHERE {' AND '.join(conditions)}"
-        
-        # Ajouter ORDER BY
+
+        # Add ORDER BY
         if order_by:
             sql_query += f" ORDER BY {order_by}"
-        
-        # Ajouter LIMIT
+
+        # Add LIMIT
         if limit is not None:
             sql_query += f" LIMIT {limit}"
-        
-        # Exécuter la requête SQL générée via execute_sql_query
+
+        # Run the SQL query generated via execute_sql_query
         return await execute_sql_query(
             doc_id=doc_id,
             sql_query=sql_query,
             parameters=params,
             ctx=ctx
         )
-        
+
     except Exception as e:
         logger.error(f"Error in filter_sql_query: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors du filtrage SQL: {str(e)}",
+            "message": f"Error filtering data in SQL: {str(e)}",
             "query": "",
             "records": [],
             "record_count": 0
@@ -153,122 +128,152 @@ async def filter_sql_query(
 async def execute_sql_query(
     doc_id: str,
     sql_query: str,
-    parameters: Optional[List[Any]] = None,
+    parameters: Optional[List[Union[str, int, float]]] = None,
     timeout_ms: Optional[int] = 1000,
     ctx=None
 ) -> Dict[str, Any]:
     """
     Executes a custom SQL query on a Grist document.
 
-    Allows you to execute complex SQL queries with joins,
-
-    aggregations and subqueries.
+    Allows complex SQL queries with joins, aggregations, and subqueries.
+    Grist documents are SQLite databases - queries are run by SQLite.
 
     Prerequisites:
-
-        - list_tables: To see the names of the available tables
-
-        - list_columns: To find out the names of the columns to query
+        - list_tables: See available table names
+        - list_columns: See column names to query
 
     Typical workflow:
+        1. list_tables(doc_id) → get table IDs
+        2. list_columns(doc_id, table_id) → get columns IDs
+        3. execute_sql_query(doc_id, '''SELECT t1."Name", t2."Email" FROM "Projects" t1
+                                        JOIN "Users" t2 ON t1."Lead_ID" = t2."id"
+                                        WHERE t1."Status" = ?''',
+                             parameters=["Active"])
 
-        1. list_tables(doc_id) → identify the tables
-
-        2. list_columns(doc_id, table_id) → identify the columns
-
-        3. execute_sql_query(doc_id, "SELECT t1.col1, t2.col2 FROM Table1 t1
-
-    JOIN Table2 t2 ON t1.id = t2.ref_id
-
-    WHERE t1.status = ?",
-
-    parameters=["active"])
+    Table and column identifiers:
+        - Use table IDs (e.g., Project_Tracker), not table names (Project Tracker)
+        - Use column IDs (e.g., Project_Name), not column labels (Project Name)
+        - Quote identifiers with double quotes (SQL best practice)
+        - Example: SELECT "Project_Name", "Start_Date" FROM "Project_Tracker"
+              WHERE "Status" = ?
 
     Security:
-
         - Always use bound parameters (?) for variable values
+        - Example: WHERE Status = ? with parameters=["Active"]
+        - Never interpolate values directly into SQL string
 
-        - Only SELECT queries are allowed
+    Limitations:
+        - Only SELECT statements allowed (no INSERT, UPDATE, DELETE)
+        - No trailing semicolons
+        - WITH clauses permitted for CTEs
+        - Modify operations not supported
 
     Args:
-
-        doc_id: Document ID
-
-        sql_query: SQL query to execute (SELECT only)
-
-        parameters: List of parameters for the '?' placeholders in the query
-
-        timeout_ms: Timeout in milliseconds (default: 1000)
-
-
+        - doc_id: Document ID
+        - sql_query: SQL query to execute (SELECT only, no semicolon)
+        - parameters: Bound parameters for the '?' placeholders;
+              array of strings, numbers, or None;
+              example: ["Active", 50000] for WHERE Status = ? AND Budget > ?
+        - timeout_ms: Query timeout in milliseconds (default: 1000, cannot exceed default)
 
     Returns:
+        Dict with query results and metadata
 
-    Dict with query results and metadata
+    Examples:
+        # Simple query with filter
+        execute_sql_query(
+            doc_id="abc123",
+            sql_query='SELECT "Name", "Budget" FROM "Projects" WHERE "Status" = ?',
+            parameters=["Active"]
+        )
+
+        # Join with aliases
+        execute_sql_query(
+            doc_id="abc123",
+            sql_query='''
+                SELECT p."Name", u."Email"
+                FROM "Projects" p
+                JOIN "Users" u ON p."Lead" = u."id"
+                WHERE p."Budget" > ? AND p."Status" = ?
+            ''',
+            parameters=[50000, "Active"]
+        )
+
+        # Aggregation with GROUP BY
+        execute_sql_query(
+            doc_id="abc123",
+            sql_query='''
+                SELECT "Priority", COUNT(*) as count
+                FROM "Projects"
+                WHERE "Status" = ?
+                GROUP BY "Priority"
+            ''',
+            parameters=["Active"]
+        )
     """
     logger.info(f"Tool called: execute_sql_query for doc_id: {doc_id}")
-    
+
     try:
-        # Vérifier que la requête est une requête SELECT
+        # Verify that the query is a SELECT query
         sql_query = sql_query.strip()
         if not re.match(r'^SELECT\s', sql_query, re.IGNORECASE):
             return {
                 "success": False,
-                "message": "Seules les requêtes SELECT sont autorisées pour des raisons de sécurité.",
+                "message": "Only SELECT requests are allowed for security reasons.",
                 "query": sql_query,
                 "records": [],
                 "record_count": 0
             }
-        
+
         client = get_client(ctx)
         if not client:
             return {
                 "success": False,
-                "message": "Client Grist non configuré",
+                "message": "Grist client not configured",
                 "query": sql_query,
                 "records": [],
                 "record_count": 0
             }
-        
-        # Préparer la requête SQL
+
+        # Prepare SQL query
         query_data = {
             "sql": sql_query,
             "args": parameters or []
         }
-        
+
         if timeout_ms:
             query_data["timeout"] = timeout_ms
-        
-        # Exécuter la requête SQL
+
+        # Run SQL query
         response = await client._request(
             method="POST",
             endpoint=f"/docs/{doc_id}/sql",
             json_data=query_data
         )
-        
-        # Extraire et formater les résultats
+
+        # Extract and format results
         statement = response.get("statement", sql_query)
         records = response.get("records", [])
-        
-        # Ajouter des IDs si nécessaire
+
+        # Add IDs if needed
         for i, record in enumerate(records):
             if "id" not in record:
                 record["id"] = i + 1
-        
+
         return {
             "success": True,
-            "message": f"Requête SQL exécutée avec succès. {len(records)} enregistrements trouvés.",
+            "message": f"SQL query executed successfully. {len(records)} records found.",
             "query": sql_query,
             "statement": statement,
             "records": records,
             "record_count": len(records)
         }
-        
+
     except Exception as e:
         logger.error(f"Error in execute_sql_query: {str(e)}")
         return {
             "success": False,
-            "message": f"Erreur lors de l'exécution de la requête SQL: {str(e)}",
+            "message": f"Error executing SQL query: {str(e)}",
             "query": sql_query,
             "records": [],
             "record_count": 0
