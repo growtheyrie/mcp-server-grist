@@ -59,26 +59,67 @@ async def filter_sql_query(
     Use case:
         - Simple filtering: where_conditions={"Status": "Active"}
         - Multiple filtering: where_conditions={"Status": "Active", "Type": "A"}
+        - Datetime filtering: where_conditions={"Created_At": "2025-01-08 14:30"}
+        - Date filtering: where_conditions={"Start_Date": "2025-01-15"}
         - Sort: order_by="Name" or order_by="Value DESC"
         - Pagination: limit=20
         - Specific columns: columns=["Name", "Value", "Expiry_Date"]
+
+    Datetime handling:
+        - Use human-readable datetime strings: "2025-01-08 14:30"
+        - Use date strings for date columns: "2025-01-15"
+        - Automatic conversion to/from Unix timestamps happens internally
+        - Result columns ending with "At" or "Date" are converted to readable strings
 
     Args:
         - doc_id: Document ID
         - table_id: ID of the table to query
         - columns: List of column IDs to return (None = all); use column IDs
               (e.g., "Start_Date"), not labels ("Start Date")
-        - where_conditions: Dict of exact-match filters; implicit AND between conditions;
-              no operators (>, <, LIKE) permitted
+        - where_conditions: 
+              - Dict of exact-match filters
+              - Implicit AND between conditions
+              - No operators (>, <, LIKE) permitted
+              - Datetime strings are automatically converted
+              - Format: {"Column_ID": value}; Text: {"Status": "Active"} (case-sensitive);
+                    Numeric: {"Budget": 50000}; Datetime: {"Created_At": "2025-01-08 14:30"};
+                    Date: {"Start_Date": "2025-01-15"}; Boolean: {"Active": true}
         - order_by: Sort specification using column ID (e.g., "Start_Date DESC")
         - limit: Maximum number of results
 
     Returns:
-        Dict with filtered records and query metadata
+        Dict with filtered records (timestamps converted to readable strings) and query metadata
+
+ Examples:
+        # Filter by status
+        filter_sql_query(
+            doc_id="abc123",
+            table_id="Projects",
+            where_conditions={"Status": "Active"}
+        )
+
+        # Filter by datetime
+        filter_sql_query(
+            doc_id="abc123",
+            table_id="Sessions",
+            where_conditions={"Scheduled_At": "2025-01-15 14:30"}
+        )
+
+        # Multiple conditions with sorting
+        filter_sql_query(
+            doc_id="abc123",
+            table_id="Projects",
+            where_conditions={"Status": "Active", "Priority": "High"},
+            order_by="Created_At DESC",
+            limit=10
+        )
     """
     logger.info(f"Tool called: filter_sql_query for doc_id: {doc_id}, table_id: {table_id}")
 
     try:
+        # Import preprocessing function from records module
+        from .records import preprocess_datetime_values
+
         # Build SQL query
         columns_str = "*"
         if columns:
@@ -90,8 +131,12 @@ async def filter_sql_query(
 
         # Add WHERE conditions
         if where_conditions:
+            # Preprocess where_conditions: convert datetime strings to timestamps
+            wrapped_conditions = [where_conditions]
+            processed_conditions = preprocess_datetime_values(wrapped_conditions)[0]
+
             conditions = []
-            for col, value in where_conditions.items():
+            for col, value in processed_conditions.items():
                 conditions.append(f'"{col}" = ?')
                 params.append(value)
 
@@ -107,6 +152,7 @@ async def filter_sql_query(
             sql_query += f" LIMIT {limit}"
 
         # Run the SQL query generated via execute_sql_query
+        # Note: execute_sql_query handles both parameter preprocessing and result postprocessing
         return await execute_sql_query(
             doc_id=doc_id,
             sql_query=sql_query,
@@ -157,6 +203,12 @@ async def execute_sql_query(
         - Example: SELECT "Project_Name", "Start_Date" FROM "Project_Tracker"
               WHERE "Status" = ?
 
+    Datetime handling:
+        - Use human-readable datetime strings in parameters: "2025-01-08 14:30"
+        - Use date strings for date columns: "2025-01-15"
+        - Automatic conversion to/from Unix timestamps happens internally
+        - Result columns ending with "At" or "Date" are converted to readable strings
+
     Security:
         - Always use bound parameters (?) for variable values
         - Example: WHERE Status = ? with parameters=["Active"]
@@ -177,21 +229,21 @@ async def execute_sql_query(
         - timeout_ms: Query timeout in milliseconds (default: 1000, cannot exceed default)
 
     Returns:
-        Dict with query results and metadata
+        Dict with query results (timestamps converted to readable strings) and metadata
 
     Examples:
         # Simple query with filter
         execute_sql_query(
             doc_id="abc123",
-            sql_query='SELECT "Name", "Budget" FROM "Projects" WHERE "Status" = ?',
-            parameters=["Active"]
+            sql_query='SELECT "Name", "Created_At" FROM "Projects" WHERE "Created_At" > ?',
+            parameters=["2025-01-01 00:00"]
         )
 
         # Join with aliases
         execute_sql_query(
             doc_id="abc123",
             sql_query='''
-                SELECT p."Name", u."Email"
+                SELECT p."Name", p."Start_Date", u."Email"
                 FROM "Projects" p
                 JOIN "Users" u ON p."Lead" = u."id"
                 WHERE p."Budget" > ? AND p."Status" = ?
@@ -199,11 +251,11 @@ async def execute_sql_query(
             parameters=[50000, "Active"]
         )
 
-        # Aggregation with GROUP BY
+        # Aggregation with datetime
         execute_sql_query(
             doc_id="abc123",
             sql_query='''
-                SELECT "Priority", COUNT(*) as count
+                SELECT "Priority", MAX("Created_At") as "Latest_Created_At"
                 FROM "Projects"
                 WHERE "Status" = ?
                 GROUP BY "Priority"
@@ -214,6 +266,13 @@ async def execute_sql_query(
     logger.info(f"Tool called: execute_sql_query for doc_id: {doc_id}")
 
     try:
+        # Import preprocessing/postprocessing functions from records module
+        from .records import preprocess_datetime_values, postprocess_datetime_values
+        import os
+
+        # Get timezone from environment
+        timezone_name = os.environ.get("TIMEZONE", "Europe/London")
+
         # Verify that the query is a SELECT query
         sql_query = sql_query.strip()
         if not re.match(r'^SELECT\s', sql_query, re.IGNORECASE):
@@ -224,6 +283,14 @@ async def execute_sql_query(
                 "records": [],
                 "record_count": 0
             }
+
+        # Preprocess parameters: convert datetime strings to timestamps
+        processed_params = parameters or []
+        if processed_params:
+            # Wrap parameters in dict format for preprocessing
+            wrapped_params = [{"val": p} for p in processed_params]
+            processed_wrapped = preprocess_datetime_values(wrapped_params)
+            processed_params = [d["val"] for d in processed_wrapped]
 
         client = get_client(ctx)
         if not client:
@@ -238,7 +305,7 @@ async def execute_sql_query(
         # Prepare SQL query
         query_data = {
             "sql": sql_query,
-            "args": parameters or []
+            "args": processed_params
         }
 
         if timeout_ms:
@@ -260,6 +327,9 @@ async def execute_sql_query(
             if "id" not in record:
                 record["id"] = i + 1
 
+        # Postprocess records: convert timestamps to readable datetime strings
+        records = postprocess_datetime_values(records, timezone_name)
+        
         return {
             "success": True,
             "message": f"SQL query executed successfully. {len(records)} records found.",
