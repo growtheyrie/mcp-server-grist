@@ -635,9 +635,15 @@ async def create_table(
                           }
                       },
                       {
-                          "id": "Priority_Level",
+                          "id": "Created_At",          # DateTime column
                           "fields": {
-                              "label": "Priority Level"
+                              "label": "Created At"
+                          }
+                      },
+                      {
+                          "id": "Start_Date",          # Date column
+                          "fields": {
+                              "label": "Start Date"
                           }
                       }
                   ]
@@ -647,6 +653,10 @@ async def create_table(
         - System IDs: "Project_Name", "Priority_Level"
         - Tables: table_name → table_id (auto-converted by Grist)
         - Columns: Specify both id and label explicitly in the columns parameter
+        - DateTime columns: Must end with "At" (e.g., "Created_At", "Updated_At")
+              for automatic timestamp-to-datetime conversion
+        - Date columns: Must end with "Date" (e.g., "Start_Date", "Due_Date")
+              for automatic timestamp-to-date conversion
 
     Returns:
         Dict with status, message, and details of the created table
@@ -721,13 +731,18 @@ async def create_column(
         - doc_id: The ID of the document
         - table_id: The table ID (e.g., "Projects", "Team_Members")
         - column_id: Column identifier following Grist convention
-              (e.g., "Priority_Level", "Start_Date", "Is_Active")
+              (e.g., "Priority_Level", "Start_Date", "Is_Active");
+              for DateTime columns, use suffix "At" (e.g., "Created_At", 
+              "Updated_At"); for Date columns, use suffix "Date" 
+              (e.g., "Start_Date", "Due_Date")
         - label: Column display label in Title Case
               (e.g., "Priority Level", "Start Date", "Is Active")
 
     Naming Convention:
         - column_id: Words_Separated_By_Underscores (e.g., "Project_Name")
         - label: Title Case With Spaces (e.g., "Project Name")
+        - DateTime columns: Must end with "At" for automatic timestamp conversion
+        - Date columns: Must end with "Date" for automatic timestamp conversion
 
     Returns:
         Dict with status, message, and details of the created column
@@ -800,20 +815,21 @@ async def modify_column(
               details to a newly-created column skeleton
 
     Typical workflow:
-        Scenario A - Enriching a newly-created column:
-            1. create_table(doc_id, table_id, columns=[...]) OR
-               create_column(doc_id, table_id, column_id, label) → create skeleton
-            2. modify_column(doc_id, table_id, column_id, ...) → add details
-        Scenario B - Modifying an existing column:
-            1. list_columns(doc_id, table_id) → get column_id
-            2. modify_column(doc_id, table_id, column_id, ...) → modify details
+        1. Scenario A - Enriching a newly-created column:
+            - create_table(doc_id, table_id, columns=[...]) OR
+                  create_column(doc_id, table_id, column_id, label) → create skeleton
+            - modify_column(doc_id, table_id, column_id, ...) → add details
+        2. Scenario B - Modifying an existing column:
+            - list_columns(doc_id, table_id) → get column_id
+            - modify_column(doc_id, table_id, column_id, ...) → modify details
 
     Args:
         - doc_id: The ID of the document
         - table_id: The table ID (e.g., "Projects", "Team_Members")
         - column_id: Current column ID (e.g., "Priority_Level", "Start_Date")
         - column_type: New data type (optional) - see examples below
-        - label: New display label (optional)
+        - label: New display label (optional); for a DateTime column, use suffix "At" (e.g., "Created At",
+              "Updated At"); for a Date column, use suffix "Date" (e.g., "Start Date", "Due Date")
         - description: New explanation of column's purpose (optional but recommended)
         - formula: New formula for calculated columns (optional)
         - widget_options: New display/behavior options as dict (optional)
@@ -844,6 +860,8 @@ async def modify_column(
     Notes:
         - Column descriptions are crucial for AI assistants to understand and 
               properly use the data in your tables. Always add them when possible.
+        - For a DateTime/Date column, the naming convention (ending with "At" or "Date")
+              enables automatic conversion between Unix timestamps and human-readable strings.
     """
     logger.info(f"Tool called: modify_column with doc_id: {doc_id}, table_id: {table_id}, column_id: {column_id}")
 
