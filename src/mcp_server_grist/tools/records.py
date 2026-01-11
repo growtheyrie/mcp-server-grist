@@ -21,6 +21,20 @@ logger = logging.getLogger("grist_mcp_server")
 # Load environment variables
 load_dotenv()
 
+# Curate list of major IANA timezones with their UTC offsets
+TIMEZONE_OFFSETS = {
+    "Australia/Sydney": 11.0,
+    "Asia/Tokyo": 9.0,
+    "Asia/Shanghai": 8.0,
+    "Asia/Kuala_Lumpur": 8.0,
+    "Asia/Kolkata": 5.5,
+    "Asia/Dubai": 4.0,
+    "Europe/Paris": 1.0,
+    "Europe/London": 0.0,
+    "America/New_York": -5.0,
+    "America/Los_Angeles": -8.0,
+}
+
 def register_record_tools(mcp_server):
     """
     Registers all record management tools on the MCP server.
@@ -41,14 +55,12 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
     Convert a datetime or date string to a Unix timestamp (seconds).
 
     Supported input formats:
-        - "YYYY-MM-DD HH:MM UTC±H"  (explicit timezone offset in whole hours, 
-                                     e.g. "2025-12-28 14:30 UTC+8")
-        - "YYYY-MM-DD HH:MM"        (no timezone; the environment variable
-                                     `TIMEZONE_OFFSET` is applied, see below)
+        - "YYYY-MM-DD HH:MM"        (datetime; uses TIMEZONE environment variable)
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
     Environment Variables:
-        TIMEZONE_OFFSET: UTC offset for timezone (e.g., "+8", "-5"). Defaults to "+0" if not set.
+        TIMEZONE: IANA timezone name (e.g., "Asia/Kuala_Lumpur", "America/New_York").
+                  Defaults to "Europe/London" if not set or not in curated timezone list.
 
     Args:
         datetime_str: Datetime or date string to convert into a timestamp
@@ -61,51 +73,38 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
     """
     datetime_str = datetime_str.strip()
 
-    # Get default timezone offset from environment
-    default_offset = os.environ.get("TIMEZONE_OFFSET", "+0")
+    # Get timezone from environment and look up offset
+    timezone_name = os.environ.get("TIMEZONE", "Europe/London")
+    default_offset = TIMEZONE_OFFSETS.get(timezone_name, 0.0)
     
-    # Pattern 1: DateTime with explicit timezone "YYYY-MM-DD HH:MM UTC±offset"
-    pattern_datetime_tz = r'(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC([+-]\d+)'
-    match = re.match(pattern_datetime_tz, datetime_str)
-    
-    if match:
-        date_part, time_part, offset_hours = match.groups()
-        dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
-        offset = timedelta(hours=int(offset_hours))
-        tz = timezone(offset)
-        dt_aware = dt.replace(tzinfo=tz)
-        return int(dt_aware.timestamp())
-    
-    # Pattern 2: DateTime without timezone "YYYY-MM-DD HH:MM"
+    # Pattern 1: DateTime "YYYY-MM-DD HH:MM"
     pattern_datetime_no_tz = r'^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})$'
     match = re.match(pattern_datetime_no_tz, datetime_str)
     
     if match:
         date_part, time_part = match.groups()
         dt = datetime.strptime(f"{date_part} {time_part}", "%Y-%m-%d %H:%M")
-        offset = timedelta(hours=int(default_offset))
+        offset = timedelta(hours=default_offset) # Use fractional offset from IANA timezone
         tz = timezone(offset)
         dt_aware = dt.replace(tzinfo=tz)
-        logger.debug(f"Using default timezone offset {default_offset} for datetime: {datetime_str}")
+        logger.debug(f"Using timezone {timezone_name} (UTC{default_offset:+.1f}) for datetime: {datetime_str}")
         return int(dt_aware.timestamp())
     
-    # Pattern 3: Date only "YYYY-MM-DD"
+    # Pattern 2: Date only "YYYY-MM-DD"
     pattern_date = r'^(\d{4}-\d{2}-\d{2})$'
     match = re.match(pattern_date, datetime_str)
     
     if match:
         date_part = match.groups()[0]
         dt = datetime.strptime(f"{date_part} 00:00", "%Y-%m-%d %H:%M")
-        # Dates are always midnight UTC+0
-        tz = timezone(timedelta(hours=0))
+        tz = timezone(timedelta(hours=0)) # Dates are always midnight UTC+0
         dt_aware = dt.replace(tzinfo=tz)
         logger.debug(f"Converting date to midnight UTC: {datetime_str}")
         return int(dt_aware.timestamp())
     
     raise ValueError(
         f"Invalid datetime format. Expected formats:\n"
-        f"  - DateTime with timezone: 'YYYY-MM-DD HH:MM UTC±offset' (e.g., '2025-12-28 14:30 UTC+8')\n"
-        f"  - DateTime without timezone: 'YYYY-MM-DD HH:MM' (e.g., '2025-12-28 14:30')\n"
+        f"  - DateTime: 'YYYY-MM-DD HH:MM' (e.g., '2025-12-28 14:30')\n"
         f"  - Date only: 'YYYY-MM-DD' (e.g., '2025-12-28')\n"
         f"Got: '{datetime_str}'"
     )
