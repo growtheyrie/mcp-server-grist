@@ -180,6 +180,52 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
     return processed
 
 
+def postprocess_datetime_values(records: List[Dict[str, Any]], timezone_name: str) -> List[Dict[str, Any]]:
+    """
+    Scan a list of record dicts and convert Unix timestamps to human-readable strings.
+    
+    Internal helper function - reverse of preprocess_datetime_values.
+    Uses naming convention to detect datetime/date columns:
+        - Columns ending with "At" → DateTime (converted to "YYYY-MM-DD HH:MM")
+        - Columns ending with "Date" → Date (converted to "YYYY-MM-DD")
+    
+    Args:
+        - records: List of record dicts from Grist API
+        - timezone_name: IANA timezone name for conversion
+    
+    Returns:
+        Modified records with timestamps converted to human-readable strings
+    """
+    processed = []
+    
+    for record in records:
+        new_record = {}
+        for key, value in record.items():
+            # Check if this is a datetime/date column by naming convention
+            is_datetime = key.endswith("At")
+            is_date = key.endswith("Date")
+            
+            if (is_datetime or is_date) and isinstance(value, (int, float)) and value is not None:
+                # Convert timestamp to human-readable string
+                try:
+                    new_record[key] = convert_unix_to_datetime(
+                        int(value), 
+                        timezone_name, 
+                        is_date_only=is_date
+                    )
+                except Exception as e:
+                    # If conversion fails, keep original value
+                    logger.warning(f"Failed to convert timestamp for column {key}: {e}")
+                    new_record[key] = value
+            else:
+                # Not a datetime/date column, or value is None, keep as-is
+                new_record[key] = value
+        
+        processed.append(new_record)
+    
+    return processed
+
+
 async def add_grist_records(doc_id: str,
                             table_id: str,
                             records: List[Dict[str, Any]],
