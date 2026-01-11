@@ -63,7 +63,7 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
                   Defaults to "Europe/London" if not set or not in curated timezone list.
 
     Args:
-        datetime_str: Datetime or date string to convert into a timestamp
+        - datetime_str: Datetime or date string to convert into a timestamp
 
     Returns:
         Unix timestamp in seconds (UTC-aware)
@@ -108,6 +108,36 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
         f"  - Date only: 'YYYY-MM-DD' (e.g., '2025-12-28')\n"
         f"Got: '{datetime_str}'"
     )
+
+
+def convert_unix_to_datetime(timestamp: int, timezone_name: str, is_date_only: bool = False) -> str:
+    """
+    Convert a Unix timestamp (seconds) to a human-readable datetime or date string.
+    
+    Internal helper function - reverse of parse_datetime_to_unix.
+    
+    Args:
+        - timestamp: Unix timestamp in seconds (UTC)
+        - timezone_name: IANA timezone name (e.g., "Asia/Kuala_Lumpur")
+        - is_date_only: If True, return date only "YYYY-MM-DD", otherwise "YYYY-MM-DD HH:MM"
+    
+    Returns:
+        Formatted datetime string in local timezone
+    """
+    # Look up timezone offset
+    offset_hours = TIMEZONE_OFFSETS.get(timezone_name, 0.0)
+    offset = timedelta(hours=offset_hours)
+    tz = timezone(offset)
+    
+    # Convert timestamp to datetime in the specified timezone
+    dt = datetime.fromtimestamp(timestamp, tz=tz)
+    
+    if is_date_only:
+        # Return date only "YYYY-MM-DD"
+        return dt.strftime("%Y-%m-%d")
+    else:
+        # Return datetime "YYYY-MM-DD HH:MM"
+        return dt.strftime("%Y-%m-%d %H:%M")
 
 
 def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
