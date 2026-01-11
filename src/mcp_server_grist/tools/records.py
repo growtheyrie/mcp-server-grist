@@ -181,7 +181,7 @@ def postprocess_datetime_values(records: List[Dict[str, Any]], timezone_name: st
     """
     Scan a list of record dicts and convert Unix timestamps to human-readable strings.
     
-    Internal helper function - reverse of preprocess_datetime_values.
+    Internal helper function that handles both flat structure and nested "fields" structure.
     Uses naming convention to detect datetime/date columns:
         - Columns ending with "At" → DateTime (converted to "YYYY-MM-DD HH:MM")
         - Columns ending with "Date" → Date (converted to "YYYY-MM-DD")
@@ -194,34 +194,55 @@ def postprocess_datetime_values(records: List[Dict[str, Any]], timezone_name: st
         Modified records with timestamps converted to human-readable strings
     """
     processed = []
-    
+
     for record in records:
         new_record = {}
         for key, value in record.items():
-            # Check if this is a datetime/date column by naming convention
-            is_datetime = key.endswith("At")
-            is_date = key.endswith("Date")
-            
-            if (is_datetime or is_date) and isinstance(value, (int, float)) and value is not None:
-                # Convert timestamp to human-readable string
-                try:
-                    new_record[key] = convert_unix_to_datetime(
-                        int(value), 
-                        timezone_name, 
-                        is_date_only=is_date
-                    )
-                except Exception as e:
-                    # If conversion fails, keep original value
-                    logger.warning(f"Failed to convert timestamp for column {key}: {e}")
-                    new_record[key] = value
+            if key == "fields" and isinstance(value, dict):
+                # Process nested fields dict
+                new_fields = {}
+                for field_key, field_value in value.items():
+                    # Check if this is a datetime/date column by naming convention
+                    is_datetime = field_key.endswith("At")
+                    is_date = field_key.endswith("Date")
+                    
+                    if (is_datetime or is_date) and isinstance(field_value, (int, float)) and field_value is not None:
+                        # Convert timestamp to human-readable string
+                        try:
+                            new_fields[field_key] = convert_unix_to_datetime(
+                                int(field_value), 
+                                timezone_name, 
+                                is_date_only=is_date
+                            )
+                        except Exception as e:
+                            # If conversion fails, keep original value
+                            logger.warning(f"Failed to convert timestamp for column {field_key}: {e}")
+                            new_fields[field_key] = field_value
+                    else:
+                        # Not a datetime/date column, or value is None, keep as-is
+                        new_fields[field_key] = field_value
+                new_record[key] = new_fields
             else:
-                # Not a datetime/date column, or value is None, keep as-is
-                new_record[key] = value
+                # Process top-level fields (original behavior)
+                is_datetime = key.endswith("At")
+                is_date = key.endswith("Date")
+                
+                if (is_datetime or is_date) and isinstance(value, (int, float)) and value is not None:
+                    try:
+                        new_record[key] = convert_unix_to_datetime(
+                            int(value), 
+                            timezone_name, 
+                            is_date_only=is_date
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to convert timestamp for column {key}: {e}")
+                        new_record[key] = value
+                else:
+                    new_record[key] = value
         
         processed.append(new_record)
     
     return processed
-
 
 async def add_grist_records(doc_id: str,
                             table_id: str,
