@@ -145,8 +145,7 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
     Scan a list of record dicts and convert datetime strings to Unix timestamps.
 
     Detects and converts:
-        - "YYYY-MM-DD HH:MM UTC±offset" → Unix timestamp
-        - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE_OFFSET env var)
+        - "YYYY-MM-DD HH:MM" → Unix timestamp (uses TIMEZONE env var)
         - "YYYY-MM-DD" → Unix timestamp (midnight UTC)
 
     Leaves other values unchanged, including:
@@ -155,8 +154,7 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
         - All other column types
     """
     # Patterns for detection
-    datetime_with_tz_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2} UTC[+-]\d+$'
-    datetime_no_tz_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$'
+    datetime_pattern = r'^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$'
     date_pattern = r'^\d{4}-\d{2}-\d{2}$'
 
     processed = []
@@ -164,8 +162,7 @@ def preprocess_datetime_values(records: List[Dict[str, Any]]) -> List[Dict[str, 
         new_record = {}
         for key, value in record.items():
             if isinstance(value, str):
-                if (re.match(datetime_with_tz_pattern, value) or 
-                    re.match(datetime_no_tz_pattern, value) or 
+                if (re.match(datetime_pattern, value) or 
                     re.match(date_pattern, value)):
                     # Convert datetime/date string to Unix timestamp
                     timestamp = parse_datetime_to_unix(value)
