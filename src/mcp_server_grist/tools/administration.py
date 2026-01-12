@@ -7,6 +7,7 @@ of Grist: creation and modification of objects, access management.
 
 import json
 import logging
+import os
 from typing import Any, Dict, List, Optional, Union
 
 from ..client import get_client
@@ -860,6 +861,7 @@ async def modify_column(
     Notes:
         - Column descriptions are crucial for AI assistants to understand and 
               properly use the data in your tables. Always add them when possible.
+        - For a DateTime column, the timezone is automatically appended from the TIMEZONE environment variable.
         - For a DateTime/Date column, the naming convention (ending with "At" or "Date")
               enables automatic conversion between Unix timestamps and human-readable strings.
     """
@@ -884,6 +886,10 @@ async def modify_column(
 
         # Add fields to edit if provided
         if column_type:
+            # Automatically append timezone for DateTime columns
+            if column_type == "DateTime":
+                timezone_name = os.environ.get("TIMEZONE", "Europe/London")
+                column_type = f"DateTime:{timezone_name}
             column_data["columns"][0]["fields"]["type"] = column_type
         if label:
             column_data["columns"][0]["fields"]["label"] = label
