@@ -21,7 +21,7 @@ logger = logging.getLogger("grist_mcp_server")
 # Load environment variables
 load_dotenv()
 
-# Curate list of major IANA timezones with their UTC offsets
+# Curate a list of major IANA timezones with their UTC offsets
 TIMEZONE_OFFSETS = {
     "Australia/Sydney": 11.0,
     "Asia/Tokyo": 9.0,
@@ -59,8 +59,8 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
     Environment Variables:
-        TIMEZONE: IANA timezone name (e.g., "Asia/Kuala_Lumpur", "America/New_York").
-                  Defaults to "Europe/London" if not set or not in curated timezone list.
+        - TIMEZONE: IANA timezone name (e.g., "Asia/Kuala_Lumpur", "America/New_York").
+              Defaults to "Europe/London" if not set or not in curated timezone list.
 
     Args:
         - datetime_str: Datetime or date string to convert into a timestamp
