@@ -83,7 +83,8 @@ async def filter_sql_query(
               - Datetime strings are automatically converted
               - Format: {"Column_ID": value}; Text: {"Status": "Active"} (case-sensitive);
                     Numeric: {"Budget": 50000}; Datetime: {"Created_At": "2025-01-08 14:30"};
-                    Date: {"Start_Date": "2025-01-15"}; Boolean: {"Active": true}
+                    Date: {"Start_Date": "2025-01-15"}; Boolean: {"Active": 1} for true,
+                    {"Active": 0} for false (SQLite uses integers)
         - order_by: Sort specification using column ID (e.g., "Start_Date DESC")
         - limit: Maximum number of results
 
