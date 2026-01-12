@@ -58,7 +58,7 @@ def parse_datetime_to_unix(datetime_str: str) -> int:
         - "YYYY-MM-DD HH:MM"        (datetime; uses TIMEZONE environment variable)
         - "YYYY-MM-DD"              (date only; interpreted as midnight UTC)
 
-    Environment Variables:
+    Environment variables:
         - TIMEZONE: IANA timezone name (e.g., "Asia/Kuala_Lumpur", "America/New_York").
               Defaults to "Europe/London" if not set or not in curated timezone list.
 
@@ -252,23 +252,21 @@ async def add_grist_records(doc_id: str,
     Adds records to a Grist table.
 
     Column type and encoding brief:
-        - Text: plain string, e.g. `"Name": "Alice"`
-        - Numeric: int/float, e.g. `"Budget": 50000`
-        - Boolean: true/false, e.g. `"Active": true`
-        - Choice (single): string, e.g. `"Priority": "High"`
-        - Choice list: array of strings with "L" prefix, e.g. `"Tags": ["L", "Urgent", "Planning"]`
-        - Reference (single): integer row id, e.g. `"Lead": 17`
-        - Reference list: array of integer row ids with "L" prefix, e.g. `"Team": ["L", 8, 9, 10]`
-        - Datetime (with timezone): string, e.g. `"Created_At": "2025-12-28 14:30 UTC+8"`
-        - Datetime (without timezone): string, e.g. `"Tested_At": "2025-12-28 14:30"`
-        - Date (date only): string, e.g. `"Due_Date": "2025-12-30"`
+        - Text: plain string, e.g., `"Name": "Alice"`
+        - Numeric: int/float, e.g., `"Budget": 50000`
+        - Boolean: true/false, e.g., `"Active": true`
+        - Choice (single): string, e.g., `"Priority": "High"`
+        - Choice list: array of strings with "L" prefix, e.g., `"Tags": ["L", "Urgent", "Planning"]`
+        - Reference (single): integer row id, e.g., `"Lead": 17`
+        - Reference list: array of integer row ids with "L" prefix, e.g., `"Team": ["L", 8, 9, 10]`
+        - Datetime: string, e.g., `"Tested_At": "2025-12-28 14:30"`
+        - Date (date only): string, e.g., `"Due_Date": "2025-12-30"`
 
     Datetime and date brief:
         - String values will automatically be converted into Unix timestamps in seconds UTC
               for storage in Grist.
-        - Datetimes without timezones will automatically be assigned a timezone. This timezone
-              is determined by the TIMEZONE_OFFSET (e.g., "+8", "-5") from UTC, an environment
-              variable that defaults to "+0" if not set by the user.
+        - Datetime values will automatically be appended with a timezone from the TIMEZONE
+              environment variable.
 
     Args:
         - doc_id: The ID of the Grist document
