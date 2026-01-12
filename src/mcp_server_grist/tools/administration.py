@@ -889,7 +889,7 @@ async def modify_column(
             # Automatically append timezone for DateTime columns
             if column_type == "DateTime":
                 timezone_name = os.environ.get("TIMEZONE", "Europe/London")
-                column_type = f"DateTime:{timezone_name}
+                column_type = f"DateTime:{timezone_name}"
             column_data["columns"][0]["fields"]["type"] = column_type
         if label:
             column_data["columns"][0]["fields"]["label"] = label
