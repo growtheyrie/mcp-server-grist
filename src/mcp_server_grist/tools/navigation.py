@@ -377,6 +377,11 @@ async def list_columns(doc_id: str, table_id: str, ctx=None) -> Dict[str, Any]:
     """
     Lists all columns in a Grist table.
 
+    Typical use case:
+        Use this tool to discover:
+            - Column ID and current properties to modify those properties
+            - Column ID and type to reference the column correctly in a formula
+
     Prerequisites:
         - list_tables: To obtain a valid table_id
 
@@ -398,7 +403,11 @@ async def list_columns(doc_id: str, table_id: str, ctx=None) -> Dict[str, Any]:
     Dict with:
         - success (bool): Indicates whether the operation was successful
         - message (str): Success or error message
-        - columns (List): List of columns
+        - columns (List): List of columns, where each column includes:
+            - id: Column ID (e.g., "Priority_Level", "Start_Date")
+            - fields.type: Column type (e.g., "Text", "Numeric", "Bool", 
+                  "Ref:Customers", "RefList:People")
+            - fields.description: Explanation of column's purpose
     """
     logger.info(f"Tool called: list_columns with doc_id: {doc_id}, table_id: {table_id}")
 
