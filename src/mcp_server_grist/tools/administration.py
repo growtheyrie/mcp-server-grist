@@ -794,6 +794,7 @@ async def modify_column(
     column_type: Optional[str] = None,
     label: Optional[str] = None,
     formula: Optional[str] = None,
+    is_formula: Optional[bool] = None,
     description: Optional[str] = None,
     widget_options: Optional[Dict[str, Any]] = None,
     ctx=None
@@ -831,8 +832,10 @@ async def modify_column(
         - column_type: New data type (optional) - see examples below
         - label: New display label (optional); for a DateTime column, use suffix "At" (e.g., "Created At",
               "Updated At"); for a Date column, use suffix "Date" (e.g., "Start Date", "Due Date")
-        - description: New explanation of column's purpose (optional but recommended)
         - formula: New formula for calculated columns (optional)
+        - is_formula: Set False to make a column an editable data column (new columns default to formula
+              columns regardless of column_type); ignored if formula is also provided
+        - description: New explanation of column's purpose (optional but recommended)
         - widget_options: New display/behavior options as dict (optional)
 
     Column type examples:
@@ -896,6 +899,8 @@ async def modify_column(
         if formula is not None:  # Allow to dump the formula with an empty string
             column_data["columns"][0]["fields"]["formula"] = formula
             column_data["columns"][0]["fields"]["isFormula"] = bool(formula)
+        elif is_formula is not None:
+            column_data["columns"][0]["fields"]["isFormula"] = is_formula
         if description is not None:
             column_data["columns"][0]["fields"]["description"] = description
         if widget_options:
